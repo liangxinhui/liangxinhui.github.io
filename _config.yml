@@ -5,20 +5,10 @@
 # Site
 title: Liang Xinhui # your blog title name
 subtitle:  Liang Xinhui's blog
-author: Liang Xinhui # 作者
-language: 
-timezone: 
-
-# custom Site settings
-# more detail check out docs
-SEOTitle: Liang Xinhui's blog 
-header-img: //static.liangxh.cn/lion-blur-bg.jpg
-email: liangxinhui@qq.com
-description: "梁鑫辉在 Github 上的个人博客"
-keyword: # seo key words
-
-favicon: # your favicon png
-# custom end
+author: 梁鑫辉 # 作者
+language: zh-Hans
+timezone:
+description: 但行好事，莫问前程
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
@@ -26,49 +16,6 @@ url: http://blog.liangxh.cn
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
-
-# SNS settings
-# RSS:
-weibo_username: 
-zhihu_username: liang_xinhui
-github_username: liangxinhui
-twitter_username: 
-facebook_username:  
-linkedin_username:  
-
-# Build settings
-anchorjs: false                        # if you want to customize anchor. check out line:181 of `post.html`
-
-
-# Disqus settings 
-disqus_username: 
-
-# Duoshuo settings
-duoshuo_username:  # 你的多说帐号
-# Share component is depend on Comment so we can NOT use share only.
-duoshuo_share: true                     # set to false if you want to use Comment without Sharing
-
-# Use livere
-use_livere:
-
-# Analytics settings
-# Baidu Analytics
-ba_track_id:
-# Google Analytics
-ga_track_id:             # Format: UA-xxxxxx-xx
-ga_domain:
-
-# Sidebar settings
-sidebar-about-description: # 个人描述
-sidebar-avatar: http://source.liangxh.cn/blog/image/avatar.jpg # use absolute URL
-
-
-# Featured Tags
-featured-tags: true                     # whether or not using Feature-Tags
-featured-condition-size: 1              # A tag will be featured if the size of it is more than this condition value
-
-# friends
-friends:  # 友链
 
 # Directory
 source_dir: source
@@ -87,15 +34,24 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: true
+post_asset_folder: false
 relative_link: false
 future: true
 highlight:
   enable: true
-  line_number: false
+  line_number: true
   auto_detect: false
   tab_replace:
-
+  
+# Home page setting
+# path: Root path for your blogs index page. (default = '')
+# per_page: Posts displayed per page. (0 = disable pagination)
+# order_by: Posts order. (Order by date descending by default)
+index_generator:
+  path: ''
+  per_page: 10
+  order_by: -date
+  
 # Category & Tag
 default_category: uncategorized
 category_map:
@@ -110,21 +66,11 @@ time_format: HH:mm:ss
 
 # Pagination
 ## Set per_page to 0 to disable pagination
-per_page: 8
+per_page: 10
 pagination_dir: page
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
-
-markdown:
-  plugins:
-    - markdown-it-abbr
-    - markdown-it-footnote
-    - markdown-it-ins
-    - markdown-it-sub
-    - markdown-it-sup
-    - markdown-it-emoji
-
 ## Themes: https://hexo.io/themes/
 theme: next
 
@@ -137,25 +83,8 @@ deploy:
   message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
 
-
-# img CDN path
-cdn-url:  http://static.liangxh.cn/blog/# 你的CDN地址
-
-# Qiniu imageView2 API
-# More info http://developer.qiniu.com/code/v6/api/kodo-api/image/imageview2.html
-clip-content: "?imageView2/1/w/1400/h/400/interlace/1/q/90"
-clip-avatar: "?imageView2/2/w/300/h/300/interlace/1/q/90"
-clip-home-post-bg: "?imageView2/1/w/800/h/300/interlace/1/q/70"
-
-# post default images
-post-default-img: #博文默认的图片
-post-default-img-mobile: #移动端显示的图片
-
-# search api , set your custom key
-swiftype_key: 
-
-
-# archive page title 
-archive:
-    title: archives
-    description: 可以根据归档日期检索所有文件
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
