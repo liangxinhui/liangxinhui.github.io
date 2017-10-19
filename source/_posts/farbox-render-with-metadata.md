@@ -1,5 +1,5 @@
 ---
-Title: FarBox自定义模板根据meta进行条件渲染
+title: FarBox自定义模板根据meta进行条件渲染
 date: 2015-10-27 20:52
 status: public
 
@@ -45,9 +45,7 @@ if 'uml_seq' in post.metadata.rendertags:
 ```
 -----
 #效果
-通过chrome浏览器的调试窗口可以看到，加载有`uml_seq`标记的页面时会加载相关js，而访问同一个站点的其他页面事
-
-访问这里：[时序图测试](http://blog.liangxh.cn/post/farbox/fabox-sequence-test)
+通过chrome浏览器的调试窗口可以看到，加载有`uml_seq`标记的页面时会加载相关js，而访问同一个站点的其他页面时不会。
 
 
 -----
