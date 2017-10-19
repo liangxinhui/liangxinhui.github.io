@@ -41,7 +41,8 @@ title: 'CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程
 **刚开始，没有升级CentOS 6.5 的gcc，而是选在 Ubuntu 14.04 64bit（gcc 4.8.4）上编译。**
 
 - 该环境编译好的程序，如果直接在目标环境上运行，会有如下错误：
-```
+
+```bash
 /lib64/libc.so.6: version `GLIBC_2.17' not found
 /lib64/libc.so.6: version `GLIBC_2.14' not found 
 /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.14' not found
@@ -49,13 +50,13 @@ title: 'CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程
 ```
 
 - 尝试使用`-static-libgcc -static-stdlibc++`（静态绑定）方法执行后，依然有`libc.so.6`的版本问题。
-```
+```bash
 /lib64/libc.so.6: version `GLIBC_2.17' not found
 /lib64/libc.so.6: version `GLIBC_2.14' not found 
 ```
 
 - 使用`rpath`（动态绑定）方法，同时将`ubuntu`下的`libc.so.6`和`libstdc++.so.6`都放入生产环境，此时程序直接 **coredump**，挂在`libc.so`中：
-```
+```bash
 Program received signal SIGSEGV, Segmentation fault.
 _dl_close_worker (map=0x7ffff7865132) at dl-close.c:113
 113	  --map->l_direct_opencount;

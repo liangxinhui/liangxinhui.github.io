@@ -18,7 +18,7 @@ title: CentOS打包rpm及其依赖用于离线安装
 尽在需要安装的目标主机中安装。
 
 1.安装downloadonly插件
-```
+```bash
 yum install yum-plugin-downloadonly
 ```
 2.下载rpm及其依赖
