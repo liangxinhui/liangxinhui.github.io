@@ -103,9 +103,8 @@ manifest could not be extracted
 # 建议
 对于pyinstaller和py2exe的使用建议：
 如果没有manifest相关考虑时，建议使用`pyinstaller`，你会发现：
-```
-用pyinstaller生成一个exe是多么简单的一件事
-```
+
+> 用pyinstaller生成一个exe是多么简单的一件事
 
 如果生成的exe遇到类似这样的问题:
 ```

@@ -34,11 +34,12 @@ yum默认是不保存下载的rpm包的，如果需要，可以开启。
 修改`/etc/yum.conf`，将`keepcache`设置为`1`.
 保存路径在`/etc/yum.conf`中可通过`cachedir`配置，默认为`/var/cache/yum/$basearch/$releasever`
 0. 按常规方法yum，安装 
-``` bash
+
+```bash
 yum install devtoolset-3-gcc devtoolset-3-gcc-c++
 ```
 
-###　获取离线包方法对比
+### 获取离线包方法对比
 - downloadonly插件
   - 优点：下载主机可以不用安装要下载的包
   - 缺点：需要提前一次性安装yum插件

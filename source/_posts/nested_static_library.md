@@ -6,16 +6,14 @@ title: 静态库嵌套链接
 
 # Windows（visual studio）
 ### 项目文件
-```
-BaseLibrary.lib
-MyLibrary.lib
-MyApp.exe
-```
+- BaseLibrary.lib
+- MyLibrary.lib
+- MyApp.exe
+
 ### 依赖关系
-```
-MyApp.exe 依赖 MyLibrary.lib 
-MyLibrary.lib 依赖 BaseLibrary.lib
-```
+- MyApp.exe 依赖 MyLibrary.lib 
+- MyLibrary.lib 依赖 BaseLibrary.lib
+
 ### MyLibrary.lib项目配置
 库管理器>常规：
 - 附加依赖项：添加需要依赖的库文件BaseLibrary.lib
@@ -39,16 +37,14 @@ MyLibrary.lib 依赖 BaseLibrary.lib
 # Linux (gcc)
 
 项目文件：
-```
-libBaseLibrary.a
-libMyLibrary.a
-MyApp
-```
+
+- libBaseLibrary.a
+- libMyLibrary.a
+- MyApp
+
 ### 依赖关系
-```
-MyApp 依赖 libMyLibrary.a 
-libMyLibrary.a 依赖 libBaseLibrary.a
-```
+- MyApp 依赖 libMyLibrary.a 
+- libMyLibrary.a 依赖 libBaseLibrary.a
 
 ### 操作方法
 
