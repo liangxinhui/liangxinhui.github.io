@@ -3,6 +3,8 @@ title: 树莓派 Ubuntu 18.04 Wifi 配置
 date: 2019-06-18 22:01:07
 tags:
   - raspberry
+  - Ubuntu
+  - Wifi
 ---
 
 ubuntu1804，wifi的配置要通过 netplan 进行。
