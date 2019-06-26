@@ -10,7 +10,7 @@ SWIG (Simplified Wrapper and Interface Generator)
 
 当使用wsig将c++转换为python时，可以使用`-threads` 参数。
 它可以帮你处理GIL的问题。
-
+<!-- more -->
 例如：
 ```
 swig -c++ -python -threads  example.i

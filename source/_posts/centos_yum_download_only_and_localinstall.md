@@ -15,6 +15,8 @@ tags:
 - downloadonly插件
 - yum cache
 
+<!-- more -->
+
 # 解决方案
 以CentOS 6.5下安装devtoolset-3及其依赖为例。设置好devtoolset-3的repo源之后，按以下方法操作：
 ## 1.获取离线rpm包

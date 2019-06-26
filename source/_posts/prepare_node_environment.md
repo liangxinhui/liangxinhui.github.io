@@ -9,7 +9,7 @@ tags:
 
 在Node.js的[官方下载网站](https://nodejs.org/en/download/)上，有`Linux Binaries(.tar.gz)`的包可供下载，但是却没有说明文档。
 这里整理了`Linux Binaries(.tar.gz)`的一份安装说明。
-
+<!-- more -->
 以`Ubuntu`为例，其他Linux环境类似：
 # 目标
 - 可运行Node.js

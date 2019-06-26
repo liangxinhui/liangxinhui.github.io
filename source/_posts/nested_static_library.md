@@ -7,6 +7,9 @@ tags:
   - IDE
 ---
 
+Windows 和 Linux 两个平台下的实现。
+
+<!-- more -->
 # Windows（visual studio）
 ### 项目文件
 - BaseLibrary.lib
