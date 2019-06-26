@@ -1,8 +1,12 @@
 ---
 date: 2015-11-04 13:45
 status: public
-tags: python
 title: Python脚本打包成exe程序总结
+tags:
+  - Python
+  - 打包
+  - exe
+  - pyinstaller
 ---
 
 # 应用场景

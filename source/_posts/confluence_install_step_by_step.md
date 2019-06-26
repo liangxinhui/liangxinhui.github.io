@@ -2,6 +2,10 @@
 date: 2016-12-23 12:38
 status: public
 title: 'Confluence 6.0.3 安装手记'
+tags:
+  - Confluence
+  - 安装
+  - 插件
 ---
 
 # Confluence简介

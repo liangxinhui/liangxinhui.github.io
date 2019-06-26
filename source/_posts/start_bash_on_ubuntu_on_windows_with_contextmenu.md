@@ -2,6 +2,9 @@
 date: 2016-11-18 08:03
 status: public
 title: '右键菜单启动 Bash on Ubuntu on Windows '
+tags:
+  - Windows
+  - 右键菜单
 ---
 
 Windows 10 在 Red Stone 版本里开始发布的 `Bash on Ubuntu on Windows` 对于开发者来说，是一个很好的工具。

@@ -2,6 +2,9 @@
 date: 2015-12-16 10:24
 status: public
 title: Linux下快速选定当前目录的最新文件
+tags:
+  - linux
+  - scripts
 ---
 
 # 场景描述

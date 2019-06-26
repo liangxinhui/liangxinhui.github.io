@@ -2,6 +2,10 @@
 date: 2015-12-09 11:18
 status: public
 title: 通过NetBeans调试子项目
+tags:
+  - IDE
+  - 开发
+  - NetBeans
 ---
 
 通过NetBeans调试C++动态库时，有可能出现进不了子项目的情况。

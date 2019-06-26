@@ -2,6 +2,10 @@
 date: 2016-11-15 19:32
 status: public
 title: 'CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11)'
+tags:
+  - CentOS
+  - gcc
+  - c++11
 ---
 
 ## 问题背景

@@ -2,6 +2,9 @@
 date: 2016-07-13 18:57
 status: public
 title: 静态库嵌套链接
+tags:
+  - 开发
+  - IDE
 ---
 
 # Windows（visual studio）

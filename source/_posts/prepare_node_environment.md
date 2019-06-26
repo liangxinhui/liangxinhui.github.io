@@ -1,8 +1,10 @@
 ---
 date: 2015-11-05 08:27
 status: public
-tags: node.js
 title: 'Linux下准备Node.js环境（Linux Binaries版）'
+tags: 
+  - node
+  - 安装
 ---
 
 在Node.js的[官方下载网站](https://nodejs.org/en/download/)上，有`Linux Binaries(.tar.gz)`的包可供下载，但是却没有说明文档。

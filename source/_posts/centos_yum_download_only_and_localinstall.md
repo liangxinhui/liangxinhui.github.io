@@ -2,6 +2,11 @@
 date: 2016-11-22 18:11
 status: public
 title: CentOS打包rpm及其依赖用于离线安装
+tags: 
+  - CentOS
+  - rpm
+  - 离线
+  - 依赖
 ---
 
 # 使用场景
