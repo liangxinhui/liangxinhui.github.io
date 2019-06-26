@@ -11,34 +11,39 @@ Windows 和 Linux 两个平台下的实现。
 
 <!-- more -->
 # Windows（visual studio）
+
 ### 项目文件
+
 - BaseLibrary.lib
 - MyLibrary.lib
 - MyApp.exe
 
 ### 依赖关系
+
 - MyApp.exe 依赖 MyLibrary.lib 
 - MyLibrary.lib 依赖 BaseLibrary.lib
 
 ### MyLibrary.lib项目配置
+
 库管理器>常规：
 - 附加依赖项：添加需要依赖的库文件BaseLibrary.lib
 - 链接库依赖项：是
 
-![mylibrary](http://source.liangxh.cn/mylibrary.png)
+![mylibrary](/images/mylibrary.png)
 
 ### MyApp.exe项目配置
+
 只需要链接MyLibrary.lib即可。
 
 
 ### 特殊情况
+
 如果Base.lib是`boost`:
 - 需要把`boost`的自动链接库的功能关掉（使用预处理： `BOOST_ALL_NO_LIB`）
 - 然后参考上边的MyLibrary.lib配置，手工添加。
 
 否则，在MyApp.exe进行Link时，会提示找不到boost库的问题。
 
-----
 
 # Linux (gcc)
 

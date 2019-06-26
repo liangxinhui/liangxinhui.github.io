@@ -4,11 +4,11 @@
 
 # Site
 title: Liang Xinhui's Blog # your blog title name
-subtitle:  生活随笔 / 知识积累/ 技术交流
+subtitle:  知识积累/ 技术交流
 author: 梁鑫辉 # 作者
-language: zh-Hans
+language: zh-CN
 timezone:
-description: 但行好事，莫问前程
+description:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
