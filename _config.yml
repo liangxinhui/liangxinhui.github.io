@@ -77,10 +77,14 @@ theme: next
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: https://github.com/liangxinhui/liangxinhui.github.io
-  branch: master
-  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+  - type: git
+    repo: https://github.com/liangxinhui/liangxinhui.github.io
+    branch: master
+    message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+  - type: git
+    repo: https://git.coding.net/liangxinhui/liangxinhui.coding.me.git
+    branch: master
+    message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
 
 search:
