@@ -34,26 +34,33 @@ tags:
 <!-- more -->
 ------
 # 基本环境
-### 操作系统
+
+## 操作系统
 Confluence支持在windows / linux 下安装。 32bit/64bit 均可。
 我这里是在linux下安装的，试验的平台为：Ubuntu 16.04/14.04 64bit
-### 安装包
+
+## 安装包
 atlassian-confluence-6.0.3-x64.bin
+
 # 环境依赖
-### JRE 
+
+## JRE 
 安装包中集成的有，不需要单独安装。
 如果本地有java环境的话，默认也会使用它集成的java环境。
-### 数据库
+
+## 数据库
 自带小型数据库。生产环境建议使用更好性能的数据库。这里采用MySQL。
 
 ------
+
 # 数据库配置
-### 数据库安装
+
+## 数据库安装
 ubuntu server minimal安装的话，没有数据库环境，需要自行安装：
 ```bash
 sudo apt-get install mysql-server
 ```
-### 数据库配置
+## 数据库配置
 主要参考：[Atlassian 官方 MySQL 安装指导](https://confluence.atlassian.com/doc/database-setup-for-mysql-128747.html)：
 1)  修改`my.ini`
 ```bash
