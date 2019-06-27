@@ -37,7 +37,7 @@ metatest_content
 
 ## Jade文件中访问metadata，检查渲染条件
 在  `post.jade`中添加以下代码：
-加入绘制时序图的依赖哭。
+加入绘制时序图的依赖库。
 ```jade
 if 'uml_seq' in post.metadata.rendertags:
 	+load('jquery')
