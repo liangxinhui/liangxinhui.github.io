@@ -82,7 +82,7 @@ deploy:
     branch: master
     message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
   - type: git
-    repo: https://git.coding.net/liangxinhui/liangxinhui.coding.me.git
+    repo: git@git.dev.tencent.com:liang_xinhui/liangxinhui-blog.git
     branch: master
     message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
