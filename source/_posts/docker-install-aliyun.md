@@ -16,5 +16,10 @@ curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 安装好之后，根据提示，添加用户到`docker`组，可以在执行docker指令时不用输入`sudo`.
 
 ```bash
-sudo usermod -aG docker your-user
+# 添加用户到用户组
+sudo usermod -aG docker <your-username>
+# 重启docker服务
+sudo systemctl restart docker
 ```
+
+**注意:** 以上操作完成后，需要重新登录用户才能生效。
