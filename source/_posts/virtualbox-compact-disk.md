@@ -33,7 +33,7 @@ VMWare、Virtualbox提供了相应的工具来压缩磁盘空间。
 
 **使用`VBoxManage modifymedium`前，必须先将磁盘未使用空间填为`0`**
 - Windows 用 `sdelete -z`
-- Linux 用 zerofree 或 dd (`dd if=/dev/zero of=/tmp/zerofile bs=10M`)
+- Linux 用 zerofree 或 dd (`dd if=/dev/zero of=/tmp/zerofile bs=10M; rm -rf /tmp/zerofile`)
 
 # 补充说明
 
