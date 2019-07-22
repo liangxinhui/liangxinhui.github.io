@@ -79,7 +79,7 @@ footer:
   # Beian icp information for Chinese users. In China, every legal website should have a beian icp in website footer.
   # http://www.beian.miit.gov.cn
   beian:
-    enable: true
+    enable: false
     icp: 豫ICP备15030440号-1
 
   # Any custom text can be defined here.
@@ -534,7 +534,7 @@ han: false
 # Pangu Support
 # Dependencies: https://github.com/theme-next/theme-next-pangu
 # For more information: https://github.com/vinta/pangu.js
-pangu: false
+pangu: true
 
 # Quicklink Support
 # Dependencies: https://github.com/theme-next/theme-next-quicklink
@@ -747,7 +747,7 @@ needmoreshare2:
 # ---------------------------------------------------------------
 
 # Baidu Analytics ID
-baidu_analytics: 4bdb802b323fa2f04a51fca36789b479
+baidu_analytics: e3d4e2a8fc51a8f9e33b92521992446a
 
 # Growingio Analytics ID
 # Copyright 2015-2018 GrowingIO, Inc. More info available at https://www.growingio.com
@@ -1041,7 +1041,7 @@ vendors:
   # Example:
   # jquery: //cdn.jsdelivr.net/npm/jquery@2/dist/jquery.min.js
   # jquery: //cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js
-  jquery:
+  jquery: //cdn.staticfile.org/jquery/2.1.3/jquery.min.js
 
   # Internal version: 2.1.5 & 3.5.7
   # See: https://fancyapps.com/fancybox
@@ -1074,15 +1074,15 @@ vendors:
   # velocity: //cdnjs.cloudflare.com/ajax/libs/velocity/1.2.1/velocity.min.js
   # velocity_ui: //cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js
   # velocity_ui: //cdnjs.cloudflare.com/ajax/libs/velocity/1.2.1/velocity.ui.min.js
-  velocity:
-  velocity_ui:
+  velocity: //cdn.staticfile.org/velocity/1.2.1/velocity.min.js
+  velocity_ui: //cdn.staticfile.org/velocity/1.2.1/velocity.ui.min.js
 
   # Internal version: 4.6.2
   # See: https://fontawesome.com
   # Example:
   # fontawesome: //cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css
   # fontawesome: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css
-  fontawesome:
+  fontawesome: //cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css
 
   # Internal version: 2.10.4
   # See: https://www.algolia.com
@@ -1140,7 +1140,7 @@ vendors:
   # Example:
   # pangu: //cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js
   # pangu: //cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js
-  pangu:
+  pangu: //cdn.staticfile.org/pangu/4.0.7/pangu.min.js
 
   # Internal version: 1.0.0
   # See: https://github.com/GoogleChromeLabs/quicklink
