@@ -58,7 +58,7 @@ pyinstaller -F -i test.ico test.py
 # 你可能遇到的问题
 在使用 `pyinstaller`时，你可能会遇到以下问题：
 
-### 问题1：ntpath.py UnicodeDecodeError
+## 问题1：ntpath.py UnicodeDecodeError
 
 【现象】
 安装时出现类似这种情况：
@@ -86,7 +86,7 @@ reload(sys)
 sys.setdefaultencoding("gbk")
 ```
 
-### 问题2：manifest could not be extracted
+## 问题2：manifest could not be extracted
 【现象】
 程序运行时出现这个错误：
 ```
