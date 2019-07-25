@@ -3,7 +3,7 @@ title: Windows 下的 which 命令 (Get-Command)
 date: 2019-07-25 09:39:26
 tags:
   - Windows
-  - Linux
+  - linux
   - which
   - Get-Command
 ---
