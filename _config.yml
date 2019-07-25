@@ -81,10 +81,10 @@ deploy:
     repo: https://github.com/liangxinhui/liangxinhui.github.io
     branch: master
     message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
-  # - type: git
-  #   repo: git@git.dev.tencent.com:liang_xinhui/liangxinhui-blog.git
-  #   branch: master
-  #   message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+  - type: git
+    repo: git@git.dev.tencent.com:liang_xinhui/liangxinhui-blog.git
+    branch: master
+    message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
 
 search:
