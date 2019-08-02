@@ -13,19 +13,16 @@ tags:
 **1列输入-1列输出 最简单：**
 
 ```python
-
 def foo(x):
     y = x + 1
     return y
-
+    
 df['new_column'] = df['column_1'].apply(foo)
-
 ```
 
 **N列输入-1列输出:**
 
 ```python
-
 def foo_multiple_input(x):
     if x['column_1'] > 0:
         y = x['column_2'] + x['column_3']
@@ -34,7 +31,6 @@ def foo_multiple_input(x):
     return y
 
 df['new_column'] = df.apply(foo_multiple_input,axis=1)
-
 ```
 
 
@@ -57,7 +53,6 @@ df['new_column'] = df.apply(foo_multiple_input,axis=1)
 
 
 ```python
-
 df_test = pd.DataFrame([
     {'dir': '/Users/uname1', 'size': 994933},
     {'dir': '/Users/uname2', 'size': 109338711},
@@ -88,8 +83,8 @@ def sizes_series(s):
     s['size_kb'] = locale.format("%.1f", s['size'] / 1024.0, grouping=True) + ' KB'
     s['size_mb'] = locale.format("%.1f", s['size'] / 1024.0 ** 2, grouping=True) + ' MB'
     s['size_gb'] = locale.format("%.1f", s['size'] / 1024.0 ** 3, grouping=True) + ' GB'
-    return s
-    
+    return s    
+
 df_test = df_test.apply(sizes_serias, axis=1)
 ```
 该方案的原理为：
