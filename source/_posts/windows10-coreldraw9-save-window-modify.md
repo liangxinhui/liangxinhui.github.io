@@ -18,6 +18,6 @@ CorelDRAW 9 在 Windows10下运行时，保存窗口被遮盖。
 
 该方法有一定的通用性，适用于老软件在Windows10下窗口元素错位、遮盖问题。
 
-附 CoreDRAW 9 修改过的`drawintl.dll`文件：
+附 CorelDRAW 9 修改过的`drawintl.dll`文件：
 > 链接：https://pan.baidu.com/s/1iTEXSpT7m0PL6Us0x_7X9Q 
 > 提取码：bf2j 
