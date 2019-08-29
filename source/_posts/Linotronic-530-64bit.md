@@ -3,7 +3,7 @@ title: Windows10 下安装 Linotronic 530 虚拟打印机（64位）
 date: 2019-08-28 22:27:02
 tags:
   - Linotronic
-  - prn
+  - prn文件
   - CorelDRAW
 ---
 
