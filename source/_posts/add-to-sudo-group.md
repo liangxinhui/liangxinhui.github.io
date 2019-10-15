@@ -22,6 +22,9 @@ Ubuntu下，默认创建的用户可以通过sudo执行高级权限的动作。
 sudo usermod -aG sudo <username>
 ```
 
+**注意事项：**
+- 需要重新登录用户后生效
+
 # 原因分析
 
 查看 /etc/sudoers 文件，可以看到：
