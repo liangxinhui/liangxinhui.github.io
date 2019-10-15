@@ -29,6 +29,8 @@ sudo usermod -aG sudo <username>
 
 查看 /etc/sudoers 文件，可以看到：
 
+<!--more-->
+
 **sudo 用户组内的用户可以执行任何命令**
 
 ```bash
