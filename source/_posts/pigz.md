@@ -2,6 +2,9 @@
 title: 使用 pigz 并行加速 Linux 压缩与解压
 date: 2019-11-13 09:12:05
 tags:
+  - linux
+  - pigz
+  - 效率
 ---
 
 Linux下压缩或解压一个文件，通常使用`tar.gz`格式，对应的工具为 `tar`(打包工具)以及由`-z`参数指定的`gzip`（压缩解压工具）。
