@@ -27,6 +27,10 @@ tar -I pigz -cvf package.tar.gz /path/to/file_or_folder
 # 解压 (中括号内为可选，用于指定解压缩目标地址)
 tar -I pigz -xvf package.tar.gz [-C  /path/to/extracted]
 ```
+**注意事项：**
+- 常规的`tar`方法中`czvf`或`xzvf`中前边的`-`可省了，且`fv`或`vf`顺序可调整
+- 此处因为要加入`-I`参数，不能省略`-`，且`vf`参数只能是`f`在后（`f`紧挨指定的压缩文件路径)
+ 
 
 # 原理解析
 <!--more-->
@@ -46,6 +50,7 @@ tar -xzvf package.tar.gz [-C  /path/to/extracted]
   -z, --gzip, --gunzip, --ungzip   filter the archive through gzip
   -f, --file=ARCHIVE               use archive file or device ARCHIVE
   -C, --directory=DIR              change to directory DIR
+  -v, --verbose                    verbosely list files processed
 </pre>
 
 以及另外一个我们今天使用的参数：
