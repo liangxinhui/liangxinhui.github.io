@@ -12,6 +12,16 @@ https://liangxinhui.tech/2019/07/18/docker-install-aliyun/
 
 离线安装，可用二进制包，直接解压即可使用。
 
+
+# 构建镜像
+
+## build context
+
+docker build 上下文。可通过 `.dockerignore` （类似`.gitignore`) 排除不必要的文件或目录。
+
+- [Docker Tips: All About the Build Context](https://medium.com/better-programming/docker-tips-about-the-build-context-dbc76505e178)
+
+
 # Dockerfile
 
 Dockerfile 作为构建 Docker 镜像的描述文件。
@@ -105,5 +115,4 @@ EXPOSE 8888
 CMD [ "jupyter", "notebook" ]
 ```
 
-参考手册：
-https://docs.docker.com/reference/
+参考手册：https://docs.docker.com/reference/
