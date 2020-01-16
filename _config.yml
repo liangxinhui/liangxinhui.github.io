@@ -4,7 +4,7 @@
 
 # Site
 title: Liang Xinhui's Blog # your blog title name
-subtitle:  知识积累/ 技术交流
+subtitle: 知识积累/ 技术交流
 author: 梁鑫辉 # 作者
 language: zh-CN
 timezone:
@@ -42,16 +42,16 @@ highlight:
   line_number: true
   auto_detect: false
   tab_replace:
-  
+
 # Home page setting
 # path: Root path for your blogs index page. (default = '')
 # per_page: Posts displayed per page. (0 = disable pagination)
 # order_by: Posts order. (Order by date descending by default)
 index_generator:
-  path: ''
+  path: ""
   per_page: 5
   order_by: -date
-  
+
 # Category & Tag
 default_category: uncategorized
 category_map:
@@ -79,11 +79,11 @@ theme: next
 deploy:
   - type: git
     repo: https://github.com/liangxinhui/liangxinhui.github.io
-    branch: master
+    branch: gh-pages
     message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
   - type: git
     repo: git@git.dev.tencent.com:liang_xinhui/liangxinhui-blog.git
-    branch: master
+    branch: gh-pages
     message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
 search:
