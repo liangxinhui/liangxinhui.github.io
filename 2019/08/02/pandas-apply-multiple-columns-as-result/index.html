@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://liangxinhui.tech').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false,"dimmer":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: true,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":true,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="pandas.DataFrame 中的 apply 方法可以用于生成新的数据。 基础方法（1对1，N对1）1列输入-1列输出 最简单： 12345def foo(x):    y = x + 1    return y    df[&apos;new_column&apos;] = df[&apos;column_1&apos;].apply(foo)  N列输入-1列输出: 12345678def foo_multiple_input">
+<meta name="keywords" content="Python,Pandas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pandas 一次 Apply 返回多列结果的方法">
+<meta property="og:url" content="https://liangxinhui.tech/2019/08/02/pandas-apply-multiple-columns-as-result/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="pandas.DataFrame 中的 apply 方法可以用于生成新的数据。 基础方法（1对1，N对1）1列输入-1列输出 最简单： 12345def foo(x):    y = x + 1    return y    df[&apos;new_column&apos;] = df[&apos;column_1&apos;].apply(foo)  N列输入-1列输出: 12345678def foo_multiple_input">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-01-16T01:07:10.421Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Pandas 一次 Apply 返回多列结果的方法">
+<meta name="twitter:description" content="pandas.DataFrame 中的 apply 方法可以用于生成新的数据。 基础方法（1对1，N对1）1列输入-1列输出 最简单： 12345def foo(x):    y = x + 1    return y    df[&apos;new_column&apos;] = df[&apos;column_1&apos;].apply(foo)  N列输入-1列输出: 12345678def foo_multiple_input">
+
+<link rel="canonical" href="https://liangxinhui.tech/2019/08/02/pandas-apply-multiple-columns-as-result/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Pandas 一次 Apply 返回多列结果的方法 | Liang Xinhui's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?266aa1fde19c24c3608401f9a5103fc1";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta custom-logo">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Liang Xinhui's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">知识积累/ 技术交流</h1>
+      
+      <a>
+        <img class="custom-logo-image" src="[object Object]" alt="Liang Xinhui's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2019/08/02/pandas-apply-multiple-columns-as-result/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Pandas 一次 Apply 返回多列结果的方法
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-02 09:41:33" itemprop="dateCreated datePublished" datetime="2019-08-02T09:41:33+08:00">2019-08-02</time>
+            </span>
+
+          
+            <span id="/2019/08/02/pandas-apply-multiple-columns-as-result/" class="post-meta-item leancloud_visitors" data-flag-title="Pandas 一次 Apply 返回多列结果的方法" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/08/02/pandas-apply-multiple-columns-as-result/#comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/08/02/pandas-apply-multiple-columns-as-result/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><code>pandas.DataFrame</code> 中的 <code>apply</code> 方法可以用于生成新的数据。</p>
+<h1 id="基础方法（1对1，N对1）"><a href="#基础方法（1对1，N对1）" class="headerlink" title="基础方法（1对1，N对1）"></a>基础方法（1对1，N对1）</h1><p><strong>1列输入-1列输出 最简单：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo</span><span class="params">(x)</span>:</span></span><br><span class="line">    y = x + <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> y</span><br><span class="line">    </span><br><span class="line">df[<span class="string">'new_column'</span>] = df[<span class="string">'column_1'</span>].apply(foo)</span><br></pre></td></tr></table></figure>
+
+<p><strong>N列输入-1列输出:</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo_multiple_input</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> x[<span class="string">'column_1'</span>] &gt; <span class="number">0</span>:</span><br><span class="line">        y = x[<span class="string">'column_2'</span>] + x[<span class="string">'column_3'</span>]</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        y = x[<span class="string">'column_4'</span>] * x[<span class="string">'column_5'</span>]</span><br><span class="line">    <span class="keyword">return</span> y</span><br><span class="line"></span><br><span class="line">df[<span class="string">'new_column'</span>] = df.apply(foo_multiple_input,axis=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="复杂场景（1对N）"><a href="#复杂场景（1对N）" class="headerlink" title="复杂场景（1对N）"></a>复杂场景（1对N）</h1><p><strong>1列输入-N列输出，N对N的处理方法类似:</strong></p>
+<a id="more"></a>
+
+<p>这里给出 <a href="https://stackoverflow.com/questions/23586510/return-multiple-columns-from-apply-pandas" target="_blank" rel="noopener">StackOverflow上相关问答</a></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>有人提出这么一个问题：</p>
+<blockquote>
+<p>想把<code>size</code>一列转换为<code>KB</code>/<code>MB</code>/<code>GB</code> 3列。<br>他自己的实现方式为，执行3次<code>1列输入-1列输出</code>的操作。<br>想知道有没有更好的实现方式。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">df_test = pd.DataFrame([</span><br><span class="line">    &#123;<span class="string">'dir'</span>: <span class="string">'/Users/uname1'</span>, <span class="string">'size'</span>: <span class="number">994933</span>&#125;,</span><br><span class="line">    &#123;<span class="string">'dir'</span>: <span class="string">'/Users/uname2'</span>, <span class="string">'size'</span>: <span class="number">109338711</span>&#125;,</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">df_test[<span class="string">'size_kb'</span>] = df_test[<span class="string">'size'</span>].astype(int).apply(<span class="keyword">lambda</span> x: locale.format(<span class="string">"%.1f"</span>, x / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">' KB'</span>)</span><br><span class="line">df_test[<span class="string">'size_mb'</span>] = df_test[<span class="string">'size'</span>].astype(int).apply(<span class="keyword">lambda</span> x: locale.format(<span class="string">"%.1f"</span>, x / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">' MB'</span>)</span><br><span class="line">df_test[<span class="string">'size_gb'</span>] = df_test[<span class="string">'size'</span>].astype(int).apply(<span class="keyword">lambda</span> x: locale.format(<span class="string">"%.1f"</span>, x / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">' GB'</span>)</span><br><span class="line"></span><br><span class="line">df_test</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">             dir       size       size_kb   size_mb size_gb</span><br><span class="line"><span class="number">0</span>  /Users/uname1     <span class="number">994933</span>      <span class="number">971.6</span> KB    <span class="number">0.9</span> MB  <span class="number">0.0</span> GB</span><br><span class="line"><span class="number">1</span>  /Users/uname2  <span class="number">109338711</span>  <span class="number">106</span>,<span class="number">776.1</span> KB  <span class="number">104.3</span> MB  <span class="number">0.1</span> GB</span><br></pre></td></tr></table></figure>
+
+<p>该原始方案，我们暂且记做<code>one-by-one</code>。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>有两个大神给出了两种方案：</p>
+<p><strong>方案1：返回Series</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sizes_series</span><span class="params">(s)</span>:</span></span><br><span class="line">    s[<span class="string">'size_kb'</span>] = locale.format(<span class="string">"%.1f"</span>, s[<span class="string">'size'</span>] / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">' KB'</span></span><br><span class="line">    s[<span class="string">'size_mb'</span>] = locale.format(<span class="string">"%.1f"</span>, s[<span class="string">'size'</span>] / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">' MB'</span></span><br><span class="line">    s[<span class="string">'size_gb'</span>] = locale.format(<span class="string">"%.1f"</span>, s[<span class="string">'size'</span>] / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">' GB'</span></span><br><span class="line">    <span class="keyword">return</span> s    </span><br><span class="line"></span><br><span class="line">df_test = df_test.apply(sizes_serias, axis=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>该方案的原理为：</p>
+<ul>
+<li>对每一行记录返回1个 <code>Series</code>,这个<code>Series</code>包含原始的所有列</li>
+<li>汇总的结果还是整个<code>Dataframe</code>且包含新增列</li>
+</ul>
+<p><strong>方案2：使用tuple</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sizes</span><span class="params">(s)</span>:</span>    </span><br><span class="line">    <span class="keyword">return</span> locale.format(<span class="string">"%.1f"</span>, s / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">' KB'</span>, \</span><br><span class="line">        locale.format(<span class="string">"%.1f"</span>, s / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">' MB'</span>, \</span><br><span class="line">        locale.format(<span class="string">"%.1f"</span>, s / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">' GB'</span></span><br><span class="line"></span><br><span class="line">df_test[<span class="string">'size_kb'</span>],  df_test[<span class="string">'size_mb'</span>], df_test[<span class="string">'size_gb'</span>] = zip(*df_test[<span class="string">'size'</span>].apply(sizes))</span><br></pre></td></tr></table></figure>
+
+<p>这里解释一下tuple方案的原理：</p>
+<ul>
+<li>先使用<code>apply</code>对每一<code>行</code>返回一个<code>tuple</code>，apply的结果为 m*3 的 <code>array</code> （m为行数）</li>
+<li>再使用<code>zip(*array)</code>将数据转为 3 个 <code>list</code> 组成的 <code>tuple</code></li>
+<li>用3个<code>DataFrame[column]</code>分别接收各个结果</li>
+</ul>
+<p><strong>补充一下zip的用法说明</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">b = [<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>]</span><br><span class="line"></span><br><span class="line">ziped_data = list(zip(a,b))</span><br><span class="line">print(ziped_data) <span class="comment"># [(1, 'a'), (2, 'b'), (3, 'c')]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># unzip</span></span><br><span class="line">unziped_data = list(zip(*ziped_data))</span><br><span class="line">print(unziped_data) <span class="comment"># [(1, 2, 3), ('a', 'b', 'c')]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="效率对比"><a href="#效率对比" class="headerlink" title="效率对比"></a>效率对比</h2><p>从运行时间看：</p>
+<ul>
+<li><code>tuple</code> 方案运行效率最高，但可读性相对较差</li>
+<li>原始的<code>one-by-one</code>方案，效率可接受。特别是在数据量大的情况下，与<code>tuple</code>差异不明显。</li>
+<li><code>series</code>方案，运行效率明显较低。不推荐。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 2 行数据</span></span><br><span class="line"><span class="comment">##  one-by-one apply</span></span><br><span class="line">2.32 ms ± 121 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span><br><span class="line"><span class="comment">## series</span></span><br><span class="line">16.9 ms ± 75.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span><br><span class="line"><span class="comment">##  zip</span></span><br><span class="line">1.29 ms ± 21 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 10000 行数据</span></span><br><span class="line"><span class="comment">##  one-by-one apply</span></span><br><span class="line">580 ms ± 13.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br><span class="line"><span class="comment">## series</span></span><br><span class="line">4.32 s ± 29.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br><span class="line"><span class="comment">##  zip</span></span><br><span class="line">565 ms ± 7.29 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br></pre></td></tr></table></figure>
+
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><ul>
+<li>如果新生成列数不是很多，且逐列生成过程中没有重复计算的情况下，建议使用可读性更高的<code>one-by-one</code>方案。</li>
+<li>其他场景，推荐使用 <code>tuple + (un)zip</code> 的方案，效率更高。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div></div>
+  <button disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="http://source.liangxh.cn/wechatpay.png" alt="梁鑫辉 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/Pandas/" rel="tag"># Pandas</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/02/python-clean-mp3-tags/" rel="prev" title="使用 Python 清理 MP3 的标签">
+      <i class="fa fa-chevron-left"></i> 使用 Python 清理 MP3 的标签
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/12/python-yaml-not-sort-keys/" rel="next" title="PyYAML 不要对名称排序">
+      PyYAML 不要对名称排序 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基础方法（1对1，N对1）"><span class="nav-number">1.</span> <span class="nav-text">基础方法（1对1，N对1）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#复杂场景（1对N）"><span class="nav-number">2.</span> <span class="nav-text">复杂场景（1对N）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方案"><span class="nav-number">2.2.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效率对比"><span class="nav-number">2.3.</span> <span class="nav-text">效率对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https://github.com/liangxinhui" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn" rel="noopener" target="_blank">豫ICP备15030440号-3 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+
+        
+
+
+
+
+
+
+  <script>
+  function leancloudSelector(url) {
+    url = encodeURI(url);
+    return document.getElementById(url).querySelector('.leancloud-visitors-count');
+  }
+  if (CONFIG.page.isPost) {
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.getAttribute('id'));
+      var title = visitors.getAttribute('data-flag-title');
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+              leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .then(response => response.json())
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              })
+          } else {
+              Counter('post', '/classes/Counter', { title: title, url: url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  } else {
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.getAttribute('id'));
+      });
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url: { '$in': entries } })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length === 0) {
+            document.querySelectorAll('.leancloud_visitors .leancloud-visitors-count').forEach(element => {
+              element.innerText = 0;
+            });
+            return;
+          }
+          for (let item of results) {
+            let { url, time } = item;
+            leancloudSelector(url).innerText = time;
+          }
+          for (let url of entries) {
+            var element = leancloudSelector(url);
+            if (element.innerText == '') {
+              element.innerText = 0;
+            }
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  }
+
+  fetch('https://app-router.leancloud.cn/2/route?appId=kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz')
+    .then(response => response.json())
+    .then(({ api_server }) => {
+      var Counter = (method, url, data) => {
+        return fetch(`https://${api_server}/1.1${url}`, {
+          method: method,
+          headers: {
+            'X-LC-Id': 'kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz',
+            'X-LC-Key': 'IRVrTx8DILjymqgMAm8z76rR',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js"></script>
+  <script src="//cdn.staticfile.org/velocity/1.2.1/velocity.min.js"></script>
+  <script src="//cdn.staticfile.org/velocity/1.2.1/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//cdn.staticfile.org/valine/1.3.9/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el: '#valine-comments',
+      verify: false,
+      notify: false,
+      appId: 'kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz',
+      appKey: 'IRVrTx8DILjymqgMAm8z76rR',
+      placeholder: "Just go go",
+      avatar: 'mm',
+      meta: guest,
+      pageSize: '10' || 10,
+      visitor: false,
+      lang: '' || 'zh-cn',
+      path: location.pathname,
+      recordIP: false,
+      serverURLs: ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

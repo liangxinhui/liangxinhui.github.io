@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://liangxinhui.tech').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false,"dimmer":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: true,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":true,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="安装部署联网环境下，可使用阿里云镜像，方法参照：https://liangxinhui.tech/2019/07/18/docker-install-aliyun/ 离线安装，可用二进制包，直接解压即可使用。 DockerfileDockerfile 作为构建 Docker 镜像的描述文件。">
+<meta name="keywords" content="docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker 实践经验">
+<meta property="og:url" content="https://liangxinhui.tech/2020/01/15/docker-practices/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="安装部署联网环境下，可使用阿里云镜像，方法参照：https://liangxinhui.tech/2019/07/18/docker-install-aliyun/ 离线安装，可用二进制包，直接解压即可使用。 DockerfileDockerfile 作为构建 Docker 镜像的描述文件。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-01-16T01:07:10.415Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="docker 实践经验">
+<meta name="twitter:description" content="安装部署联网环境下，可使用阿里云镜像，方法参照：https://liangxinhui.tech/2019/07/18/docker-install-aliyun/ 离线安装，可用二进制包，直接解压即可使用。 DockerfileDockerfile 作为构建 Docker 镜像的描述文件。">
+
+<link rel="canonical" href="https://liangxinhui.tech/2020/01/15/docker-practices/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>docker 实践经验 | Liang Xinhui's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?266aa1fde19c24c3608401f9a5103fc1";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta custom-logo">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Liang Xinhui's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">知识积累/ 技术交流</h1>
+      
+      <a>
+        <img class="custom-logo-image" src="[object Object]" alt="Liang Xinhui's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2020/01/15/docker-practices/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          docker 实践经验
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-15 14:45:44" itemprop="dateCreated datePublished" datetime="2020-01-15T14:45:44+08:00">2020-01-15</time>
+            </span>
+
+          
+            <span id="/2020/01/15/docker-practices/" class="post-meta-item leancloud_visitors" data-flag-title="docker 实践经验" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/01/15/docker-practices/#comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/01/15/docker-practices/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="安装部署"><a href="#安装部署" class="headerlink" title="安装部署"></a>安装部署</h1><p>联网环境下，可使用阿里云镜像，方法参照：<br><a href="https://liangxinhui.tech/2019/07/18/docker-install-aliyun/">https://liangxinhui.tech/2019/07/18/docker-install-aliyun/</a></p>
+<p>离线安装，可用二进制包，直接解压即可使用。</p>
+<h1 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h1><p>Dockerfile 作为构建 Docker 镜像的描述文件。</p>
+<a id="more"></a>
+
+<h2 id="几个概念"><a href="#几个概念" class="headerlink" title="几个概念"></a>几个概念</h2><h3 id="ADD-vs-COPY"><a href="#ADD-vs-COPY" class="headerlink" title="ADD vs COPY"></a>ADD vs COPY</h3><p>这两个命令都有向镜像中添加文件的功能。</p>
+<p>参考：<a href="https://www.cnblogs.com/sparkdev/p/9573248.html" target="_blank" rel="noopener">Dockerfile 中的 COPY 与 ADD 命令</a></p>
+<p>COPY 和 ADD 共同点：</p>
+<ul>
+<li>不能拷贝上下文之外的本地文件</li>
+<li>只复制目录中的内容而不包含目录自身</li>
+<li>目标地址以<code>/</code>结尾时，表示目录。否则为文件</li>
+</ul>
+<p>区别：</p>
+<ul>
+<li>COPY：拷贝文件或目录到容器中。multistage 构建时可以使用 COPY 命令把前一阶段构建的产物拷贝到另一个镜像中。</li>
+<li>ADD：除了不能用在 multistage 的场景下，ADD 命令可以完成 COPY 命令的所有功能，另外可以：<ul>
+<li>解压压缩文件并把它们添加到镜像中</li>
+<li>从 url 拷贝文件到镜像中（不推荐）</li>
+</ul>
+</li>
+</ul>
+<p><strong>docker 官方建议我们当需要从远程复制文件时，最好使用 curl 或 wget 命令来代替 ADD 命令。原因是，当使用 ADD 命令时，会创建更多的镜像层，当然镜像的 size 也会更大。</strong></p>
+<p>综合来说，COPY 更简单易懂，需要解压文件时可以使用 ADD。</p>
+<h3 id="CMD-vs-ENTRYPOINT"><a href="#CMD-vs-ENTRYPOINT" class="headerlink" title="CMD vs ENTRYPOINT"></a>CMD vs ENTRYPOINT</h3><p>这两个参数都可以指定 Docker 容器的启动命令。</p>
+<p>参考：<a href="https://blog.csdn.net/u010900754/article/details/78526443" target="_blank" rel="noopener">【docker】CMD ENTRYPOINT 区别 终极解读！</a></p>
+<ul>
+<li>ENTRYPOINT：容器入口。参数可被 CMD 内容覆盖。</li>
+<li>CMD: 整个命令可被 RUN 启动时很方便的替换</li>
+</ul>
+<p>使用建议：</p>
+<ul>
+<li>最灵活使用：CMD，可以在运行时随意修改</li>
+<li>限制启动命令，只改参数：ENTRYPOINT + CMD</li>
+</ul>
+<h3 id="WORKDIR"><a href="#WORKDIR" class="headerlink" title="WORKDIR"></a>WORKDIR</h3><p>WORKDIR 命令为后续的 RUN、CMD、COPY、ADD 等命令配置工作目录。<br>也是容器运行的工作目录。</p>
+<h2 id="示例-Dockerfile"><a href="#示例-Dockerfile" class="headerlink" title="示例 Dockerfile"></a>示例 Dockerfile</h2><ul>
+<li>基于 Ubuntu 18.04</li>
+<li>安装 python3</li>
+<li>阿里云 镜像源</li>
+<li>阿里云 pip 源</li>
+<li>常用基础工具（vim、ip、curl 等）</li>
+<li>jupyter notebook</li>
+</ul>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">18.04</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> sed -i <span class="string">'s/archive\.ubuntu\.com/mirrors.aliyun.com/g'</span> /etc/apt/sources.list</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update &amp;&amp; \</span></span><br><span class="line"><span class="bash">	apt-get install  -yq  --no-install-recommends \</span></span><br><span class="line"><span class="bash">	build-essential wget ca-certificates python3 python3-dev default-libmysqlclient-dev libssl-dev &amp;&amp; \</span></span><br><span class="line"><span class="bash">	apt-get clean &amp;&amp; \</span></span><br><span class="line"><span class="bash">	rm -rf /var/lib/apt/lists/* &amp;&amp; \</span></span><br><span class="line"><span class="bash">	ln -sf /usr/bin/python3 /usr/bin/python</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> wget -O get-pip.py  https://bootstrap.pypa.io/get-pip.py  &amp;&amp; python get-pip.py &amp;&amp; rm get-pip.py</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># pip CN mirror</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir -p ~/.pip &amp;&amp; \</span></span><br><span class="line"><span class="bash">	<span class="built_in">echo</span> <span class="string">"[global]"</span> &gt; ~/.pip/pip.conf &amp;&amp; \</span></span><br><span class="line"><span class="bash">	<span class="built_in">echo</span> <span class="string">"trusted-host=mirrors.aliyun.com"</span> &gt;&gt; ~/.pip/pip.conf &amp;&amp; \</span></span><br><span class="line"><span class="bash">	<span class="built_in">echo</span> <span class="string">"index-url=https://mirrors.aliyun.com/pypi/simple/"</span>  &gt;&gt; ~/.pip/pip.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># development basic tool</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update &amp;&amp; \</span></span><br><span class="line"><span class="bash">	apt-get install  -yq  --no-install-recommends \</span></span><br><span class="line"><span class="bash">	vim curl iproute2 iputils-ping &amp;&amp; \</span></span><br><span class="line"><span class="bash">	apt-get clean</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># notebook</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> pip3 install jupyter</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> .jupyter/ /root/.jupyter/</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /notebook</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8888</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [ <span class="string">"jupyter"</span>, <span class="string">"notebook"</span> ]</span></span><br></pre></td></tr></table></figure>
+
+<p>参考手册：<br><a href="https://docs.docker.com/reference/" target="_blank" rel="noopener">https://docs.docker.com/reference/</a></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div></div>
+  <button disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="http://source.liangxh.cn/wechatpay.png" alt="梁鑫辉 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/26/linux-shell-cheat-sheet/" rel="prev" title="Linux Shell 编程速查表">
+      <i class="fa fa-chevron-left"></i> Linux Shell 编程速查表
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#安装部署"><span class="nav-number">1.</span> <span class="nav-text">安装部署</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dockerfile"><span class="nav-number">2.</span> <span class="nav-text">Dockerfile</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#几个概念"><span class="nav-number">2.1.</span> <span class="nav-text">几个概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ADD-vs-COPY"><span class="nav-number">2.1.1.</span> <span class="nav-text">ADD vs COPY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CMD-vs-ENTRYPOINT"><span class="nav-number">2.1.2.</span> <span class="nav-text">CMD vs ENTRYPOINT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WORKDIR"><span class="nav-number">2.1.3.</span> <span class="nav-text">WORKDIR</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-Dockerfile"><span class="nav-number">2.2.</span> <span class="nav-text">示例 Dockerfile</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https://github.com/liangxinhui" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn" rel="noopener" target="_blank">豫ICP备15030440号-3 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+
+        
+
+
+
+
+
+
+  <script>
+  function leancloudSelector(url) {
+    url = encodeURI(url);
+    return document.getElementById(url).querySelector('.leancloud-visitors-count');
+  }
+  if (CONFIG.page.isPost) {
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.getAttribute('id'));
+      var title = visitors.getAttribute('data-flag-title');
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+              leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .then(response => response.json())
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              })
+          } else {
+              Counter('post', '/classes/Counter', { title: title, url: url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  } else {
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.getAttribute('id'));
+      });
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url: { '$in': entries } })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length === 0) {
+            document.querySelectorAll('.leancloud_visitors .leancloud-visitors-count').forEach(element => {
+              element.innerText = 0;
+            });
+            return;
+          }
+          for (let item of results) {
+            let { url, time } = item;
+            leancloudSelector(url).innerText = time;
+          }
+          for (let url of entries) {
+            var element = leancloudSelector(url);
+            if (element.innerText == '') {
+              element.innerText = 0;
+            }
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  }
+
+  fetch('https://app-router.leancloud.cn/2/route?appId=kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz')
+    .then(response => response.json())
+    .then(({ api_server }) => {
+      var Counter = (method, url, data) => {
+        return fetch(`https://${api_server}/1.1${url}`, {
+          method: method,
+          headers: {
+            'X-LC-Id': 'kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz',
+            'X-LC-Key': 'IRVrTx8DILjymqgMAm8z76rR',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js"></script>
+  <script src="//cdn.staticfile.org/velocity/1.2.1/velocity.min.js"></script>
+  <script src="//cdn.staticfile.org/velocity/1.2.1/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//cdn.staticfile.org/valine/1.3.9/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el: '#valine-comments',
+      verify: false,
+      notify: false,
+      appId: 'kx2CzGWUcVUvMXyE9xyPsayl-gzGzoHsz',
+      appKey: 'IRVrTx8DILjymqgMAm8z76rR',
+      placeholder: "Just go go",
+      avatar: 'mm',
+      meta: guest,
+      pageSize: '10' || 10,
+      visitor: false,
+      lang: '' || 'zh-cn',
+      path: location.pathname,
+      recordIP: false,
+      serverURLs: ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
