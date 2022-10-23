@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"liangxinhui.tech","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/config.min.js"></script>
+
+    <meta name="description" content="持续更新.. 整理记录常用 shell 代码段。 基础变量12345678# 获取当前脚本所在目录SHELL_FOLDER&#x3D;$(dirname $(readlink -f &quot;$0&quot;))# 获取当前时间 20200123112233DATETIME&#x3D;$(date +%Y%m%d%H%M%S)# 获取当前时间 2020-01-23 11:22:33DATETIME&#x3D;$(date +">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Shell 编程速查表">
+<meta property="og:url" content="https://liangxinhui.tech/2019/12/26/linux-shell-cheat-sheet/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="持续更新.. 整理记录常用 shell 代码段。 基础变量12345678# 获取当前脚本所在目录SHELL_FOLDER&#x3D;$(dirname $(readlink -f &quot;$0&quot;))# 获取当前时间 20200123112233DATETIME&#x3D;$(date +%Y%m%d%H%M%S)# 获取当前时间 2020-01-23 11:22:33DATETIME&#x3D;$(date +">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-12-26T03:27:52.000Z">
+<meta property="article:modified_time" content="2022-10-23T02:48:21.178Z">
+<meta property="article:author" content="梁鑫辉">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="shell">
+<meta property="article:tag" content="cheatsheet">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://liangxinhui.tech/2019/12/26/linux-shell-cheat-sheet/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://liangxinhui.tech/2019/12/26/linux-shell-cheat-sheet/","path":"2019/12/26/linux-shell-cheat-sheet/","title":"Linux Shell 编程速查表"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux Shell 编程速查表 | Liang Xinhui's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liang Xinhui's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">知识积累/ 技术交流</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E5%8F%98%E9%87%8F"><span class="nav-number">1.</span> <span class="nav-text">基础变量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">语法示例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E5%88%A4%E6%96%AD"><span class="nav-number">2.1.</span> <span class="nav-text">逻辑判断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF"><span class="nav-number">2.2.</span> <span class="nav-text">循环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8F%82%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">自定义参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%94%A8%E5%8A%9F%E8%83%BD%E9%9B%86%E9%94%A6"><span class="nav-number">3.</span> <span class="nav-text">实用功能集锦</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liangxinhui" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2019/12/26/linux-shell-cheat-sheet/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux Shell 编程速查表 | Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux Shell 编程速查表
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-12-26 11:27:52" itemprop="dateCreated datePublished" datetime="2019-12-26T11:27:52+08:00">2019-12-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>持续更新..</p>
+<p>整理记录常用 shell 代码段。</p>
+<h1 id="基础变量"><a href="#基础变量" class="headerlink" title="基础变量"></a>基础变量</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获取当前脚本所在目录</span></span><br><span class="line">SHELL_FOLDER=$(<span class="built_in">dirname</span> $(<span class="built_in">readlink</span> -f <span class="string">&quot;<span class="variable">$0</span>&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取当前时间 20200123112233</span></span><br><span class="line">DATETIME=$(<span class="built_in">date</span> +%Y%m%d%H%M%S)</span><br><span class="line"><span class="comment"># 获取当前时间 2020-01-23 11:22:33</span></span><br><span class="line">DATETIME=$(<span class="built_in">date</span> +%Y-%m-%d %H:%M:%S)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="语法示例"><a href="#语法示例" class="headerlink" title="语法示例"></a>语法示例</h1><h2 id="逻辑判断"><a href="#逻辑判断" class="headerlink" title="逻辑判断"></a>逻辑判断</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 判断文件夹是否存在</span></span><br><span class="line"><span class="keyword">if</span> [ -d /path/to/folder ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># do somthing if the folder exists</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="comment"># 判断文件是否存在</span></span><br><span class="line"><span class="keyword">if</span> [ -f /path/to/file ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># do somthing if the file exists</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># for 循环 (需要bash执行，ubuntu 默认sh不支持此语法)</span></span><br><span class="line"><span class="keyword">for</span> ((i=0; i&lt;N;i++));</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义参数"><a href="#自定义参数" class="headerlink" title="自定义参数"></a>自定义参数</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 取第N个参数，如果不存在，设置默认值</span></span><br><span class="line">OUTPUTDIR=<span class="variable">$1</span></span><br><span class="line"><span class="keyword">if</span> [ ! <span class="variable">$OUTPUTDIR</span> ]; <span class="keyword">then</span></span><br><span class="line">  OUTPUTDIR=/var/log/top_monitor/</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="实用功能集锦"><a href="#实用功能集锦" class="headerlink" title="实用功能集锦"></a>实用功能集锦</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 判断命令是否存在</span></span><br><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">is_cmd_exist</span></span>() &#123;</span><br><span class="line">    <span class="built_in">return</span> $(<span class="built_in">type</span> <span class="variable">$1</span> &amp;&gt;/dev/null)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除N分钟之前的文件, 例如：6 小时 = 360分钟</span></span><br><span class="line">find /your/path  -<span class="built_in">type</span> f -mmin +360  -delete</span><br><span class="line"></span><br><span class="line"><span class="comment"># top 导出文本格式</span></span><br><span class="line">top -b -c -n 1  &gt; /path/to/save</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div></div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="梁鑫辉 微信">
+        <span>微信</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/shell/" rel="tag"># shell</a>
+              <a href="/tags/cheatsheet/" rel="tag"># cheatsheet</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/12/25/electron-show-window-on-ready/" rel="prev" title="Electron 窗口启动优化">
+                  <i class="fa fa-chevron-left"></i> Electron 窗口启动优化
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/01/15/docker-practices/" rel="next" title="docker 实践经验">
+                  docker 实践经验 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-pen-nib"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.staticfile.org/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/comments.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/utils.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/motion.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/next-boot.min.js"></script>
+
+  
+
+
+
+  <script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/third-party/fancybox.min.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

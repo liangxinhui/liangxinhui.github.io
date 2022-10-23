@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"liangxinhui.tech","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/config.min.js"></script>
+
+    <meta name="description" content="VSCode Paste Image 插件，可以很方便的粘贴图片到 Markdown 文件中。 稍作配置，可以和 hexo 完美结合。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VS Code 粘贴图片插件 Paste Image">
+<meta property="og:url" content="https://liangxinhui.tech/2019/04/21/vscode-paste-image/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="VSCode Paste Image 插件，可以很方便的粘贴图片到 Markdown 文件中。 稍作配置，可以和 hexo 完美结合。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://liangxinhui.tech/images/vscode-paste-image_20190626211219.png">
+<meta property="article:published_time" content="2019-04-21T15:01:24.000Z">
+<meta property="article:modified_time" content="2022-10-23T02:48:21.186Z">
+<meta property="article:author" content="梁鑫辉">
+<meta property="article:tag" content="插件">
+<meta property="article:tag" content="VSCode">
+<meta property="article:tag" content="Markdown">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://liangxinhui.tech/images/vscode-paste-image_20190626211219.png">
+
+
+<link rel="canonical" href="https://liangxinhui.tech/2019/04/21/vscode-paste-image/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://liangxinhui.tech/2019/04/21/vscode-paste-image/","path":"2019/04/21/vscode-paste-image/","title":"VS Code 粘贴图片插件 Paste Image"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>VS Code 粘贴图片插件 Paste Image | Liang Xinhui's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liang Xinhui's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">知识积累/ 技术交流</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E8%88%AC%E5%9C%BA%E6%99%AF%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">一般场景配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hexo-%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">Hexo 配置</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liangxinhui" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2019/04/21/vscode-paste-image/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="VS Code 粘贴图片插件 Paste Image | Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          VS Code 粘贴图片插件 Paste Image
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-04-21 23:01:24" itemprop="dateCreated datePublished" datetime="2019-04-21T23:01:24+08:00">2019-04-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>VSCode <a target="_blank" rel="noopener" href="https://marketplace.visualstudio.com/items?itemName=mushan.vscode-paste-image">Paste Image</a> 插件，可以很方便的粘贴图片到 Markdown 文件中。</p>
+<p>稍作配置，可以和 hexo 完美结合。</p>
+<span id="more"></span>
+
+<h1 id="一般场景配置"><a href="#一般场景配置" class="headerlink" title="一般场景配置"></a>一般场景配置</h1><p><strong>粘贴到每个文件同级的 images 目录下</strong></p>
+<p><code>.vscode/settings.json</code>:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line"><span class="attr">&quot;pasteImage.basePath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileDir&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileDir&#125;/images&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.namePrefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileNameWithoutExt&#125;_&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.defaultName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;YMMDDHHmmss&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.forceUnixStyleSeparator&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Hexo-配置"><a href="#Hexo-配置" class="headerlink" title="Hexo 配置"></a>Hexo 配置</h1><p><strong>粘贴到 source&#x2F;images 目录下（这样可以在文章和首页都访问到）</strong></p>
+<p><code>.vscode/settings.json</code>:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.namePrefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileNameWithoutExt&#125;_&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.defaultName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;YMMDDHHmmss&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;projectRoot&#125;/source/images&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.basePath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;projectRoot&#125;/source&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.forceUnixStyleSeparator&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.prefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong><br><img src="/images/vscode-paste-image_20190626211219.png"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div></div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="梁鑫辉 微信">
+        <span>微信</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag"># 插件</a>
+              <a href="/tags/VSCode/" rel="tag"># VSCode</a>
+              <a href="/tags/Markdown/" rel="tag"># Markdown</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/04/14/ubuntu-keyboard-mapping/" rel="prev" title="Ubuntu 按键映射">
+                  <i class="fa fa-chevron-left"></i> Ubuntu 按键映射
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/04/21/fangzheng-shuban-PN-yema/" rel="next" title="方正书版PN注解实现页码功能">
+                  方正书版PN注解实现页码功能 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-pen-nib"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.staticfile.org/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/comments.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/utils.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/motion.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/next-boot.min.js"></script>
+
+  
+
+
+
+  <script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/third-party/fancybox.min.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"liangxinhui.tech","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/config.min.js"></script>
+
+    <meta name="description" content="问题背景目标生产环境  CentOS 6.5 64bit gcc 4.4.7  想使用C++11的新特性，而该环境默认的gcc 4.4.7不支持。 开发环境可以升级gcc。 本文讨论在不升级生产环境gcc的情况下，如何编译程序，以便在该环境下使用C++11新特性编译好的程序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11)">
+<meta property="og:url" content="https://liangxinhui.tech/2016/11/15/centos65_cpp11_support/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="问题背景目标生产环境  CentOS 6.5 64bit gcc 4.4.7  想使用C++11的新特性，而该环境默认的gcc 4.4.7不支持。 开发环境可以升级gcc。 本文讨论在不升级生产环境gcc的情况下，如何编译程序，以便在该环境下使用C++11新特性编译好的程序。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-11-15T11:32:00.000Z">
+<meta property="article:modified_time" content="2022-10-23T02:48:21.173Z">
+<meta property="article:author" content="梁鑫辉">
+<meta property="article:tag" content="CentOS">
+<meta property="article:tag" content="gcc">
+<meta property="article:tag" content="c++11">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://liangxinhui.tech/2016/11/15/centos65_cpp11_support/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://liangxinhui.tech/2016/11/15/centos65_cpp11_support/","path":"2016/11/15/centos65_cpp11_support/","title":"CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11) | Liang Xinhui's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liang Xinhui's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">知识积累/ 技术交流</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">问题背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%B0%E8%BF%87%E7%9A%84%E5%BC%AF%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">走过的弯路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%8F%E9%AA%8C%E6%95%99%E8%AE%AD"><span class="nav-number">4.</span> <span class="nav-text">经验教训</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liangxinhui" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2016/11/15/centos65_cpp11_support/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11) | Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-11-15 19:32:00" itemprop="dateCreated datePublished" datetime="2016-11-15T19:32:00+08:00">2016-11-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>目标生产环境</p>
+<ul>
+<li>CentOS 6.5 64bit</li>
+<li>gcc 4.4.7</li>
+</ul>
+<p>想使用<code>C++11</code>的新特性，而该环境默认的<code>gcc 4.4.7</code>不支持。</p>
+<p>开发环境可以升级<code>gcc</code>。</p>
+<p>本文讨论在不升级生产环境<code>gcc</code>的情况下，如何编译程序，以便在该环境下使用<code>C++11</code>新特性编译好的程序。</p>
+<span id="more"></span>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><strong>要点</strong>：</p>
+<ul>
+<li>在同一内核和操作系统，高版本gcc下编译程序</li>
+<li>编译时将高版本的<code>libstdc++.so.6</code>库和可执行程序进行绑定</li>
+<li>将编译好的程序发布到目标系统运行</li>
+</ul>
+<p><strong>编译时，有两种方案</strong>：</p>
+<ul>
+<li>方案A（动态绑定）：<ul>
+<li>链接时，指定<code>rpath</code>参数</li>
+<li>把<code>libstdc++.so.6</code>随可执行程序发布</li>
+<li>此种方案，运行时会从指定的<code>rpath</code>路径加载<code>libstdc++.so.6</code></li>
+</ul>
+</li>
+<li>方案B（静态绑定）：<ul>
+<li>链接时，添加参数<code>-static-libgcc  -static-libstdc++</code></li>
+<li>此种方案，运行时不依赖<code>libstdc++.so.6</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="走过的弯路"><a href="#走过的弯路" class="headerlink" title="走过的弯路"></a>走过的弯路</h2><p>尝试解决此问题时，走了以下弯路，供参考：</p>
+<p><strong>刚开始，没有升级CentOS 6.5 的gcc，而是选在 Ubuntu 14.04 64bit（gcc 4.8.4）上编译。</strong></p>
+<ul>
+<li><p>该环境编译好的程序，如果直接在目标环境上运行，会有如下错误：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.17&#x27;</span> not found</span><br><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.14&#x27;</span> not found </span><br><span class="line">/usr/lib64/libstdc++.so.6: version <span class="string">&#x27;GLIBCXX_3.4.14&#x27;</span> not found</span><br><span class="line">/usr/lib64/libstdc++.so.6: version <span class="string">&#x27;GLIBCXX_3.4.19&#x27;</span> not found</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>尝试使用<code>-static-libgcc -static-stdlibc++</code>（静态绑定）方法执行后，依然有<code>libc.so.6</code>的版本问题。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.17&#x27;</span> not found</span><br><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.14&#x27;</span> not found </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用<code>rpath</code>（动态绑定）方法，同时将<code>ubuntu</code>下的<code>libc.so.6</code>和<code>libstdc++.so.6</code>都放入生产环境，此时程序直接 <strong>coredump</strong>，挂在<code>libc.so</code>中：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Program received signal SIGSEGV, Segmentation fault.</span><br><span class="line">_dl_close_worker (map=0x7ffff7865132) at dl-close.c:113</span><br><span class="line">113	  --map-&gt;l_direct_opencount;</span><br><span class="line">(gdb) bt</span><br><span class="line"><span class="comment">#0  _dl_close_worker (map=0x7ffff7865132) at dl-close.c:113</span></span><br><span class="line"><span class="comment">#1  0x00000039c961496e in _dl_close (_map=0x7ffff7865132) at dl-close.c:757</span></span><br><span class="line"><span class="comment">#2  0x00007ffff781f58d in ?? () from /home/esunny/lib/libc.so.6</span></span><br><span class="line"><span class="comment">#3  0x00007ffff770ad67 in ?? () from /home/esunny/lib/libc.so.6</span></span><br><span class="line"><span class="comment">#4  0x00000039c960e705 in call_init (...) at dl-init.c:70</span></span><br><span class="line"><span class="comment">#5  _dl_init (...) at dl-init.c:134</span></span><br><span class="line"><span class="comment">#6  0x00000039c9600b3a in _dl_start_user () from /lib64/ld-linux-x86-64.so.2</span></span><br><span class="line"><span class="comment">#7  0x0000000000000001 in ?? ()</span></span><br><span class="line"><span class="comment">#8  0x00007fffffffe7a2 in ?? ()</span></span><br><span class="line"><span class="comment">#9  0x0000000000000000 in ?? ()</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>在同事的提醒下，尝试在CentOS下升级gcc至高版本后测试，程序正常运行。</p>
+</li>
+<li><p>原因分析：</p>
+<ul>
+<li>CentOS升级完gcc之后，<code>libc.so</code>没有变。</li>
+<li>这样，编译的时候，还是用的低版本<code>libc.so</code></li>
+<li>到生产环境，就没有<code>libc.so</code>的兼容性问题了</li>
+</ul>
+</li>
+</ul>
+<h2 id="经验教训"><a href="#经验教训" class="headerlink" title="经验教训"></a>经验教训</h2><p>对linux系统底层运行库了解不够详细。未考虑到不同平台编译时对<code>libc.so</code>的依赖有差别。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div></div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="梁鑫辉 微信">
+        <span>微信</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/CentOS/" rel="tag"># CentOS</a>
+              <a href="/tags/gcc/" rel="tag"># gcc</a>
+              <a href="/tags/c-11/" rel="tag"># c++11</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/11/03/swig_python_threads/" rel="prev" title="swig转python 多线程问题">
+                  <i class="fa fa-chevron-left"></i> swig转python 多线程问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/11/18/start_bash_on_ubuntu_on_windows_with_contextmenu/" rel="next" title="右键菜单启动 Bash on Ubuntu on Windows ">
+                  右键菜单启动 Bash on Ubuntu on Windows  <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-pen-nib"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.staticfile.org/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/comments.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/utils.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/motion.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/next-boot.min.js"></script>
+
+  
+
+
+
+  <script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/third-party/fancybox.min.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

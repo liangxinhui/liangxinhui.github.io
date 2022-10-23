@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/favicon/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"liangxinhui.tech","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/config.min.js"></script>
+
+    <meta name="description" content="在Node.js的官方下载网站上，有Linux Binaries(.tar.gz)的包可供下载，但是却没有说明文档。这里整理了Linux Binaries(.tar.gz)的一份安装说明。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux下准备Node.js环境（Linux Binaries版）">
+<meta property="og:url" content="https://liangxinhui.tech/2015/11/05/prepare_node_environment/index.html">
+<meta property="og:site_name" content="Liang Xinhui&#39;s Blog">
+<meta property="og:description" content="在Node.js的官方下载网站上，有Linux Binaries(.tar.gz)的包可供下载，但是却没有说明文档。这里整理了Linux Binaries(.tar.gz)的一份安装说明。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-11-05T00:27:00.000Z">
+<meta property="article:modified_time" content="2022-10-23T02:48:21.181Z">
+<meta property="article:author" content="梁鑫辉">
+<meta property="article:tag" content="安装">
+<meta property="article:tag" content="node">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://liangxinhui.tech/2015/11/05/prepare_node_environment/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://liangxinhui.tech/2015/11/05/prepare_node_environment/","path":"2015/11/05/prepare_node_environment/","title":"Linux下准备Node.js环境（Linux Binaries版）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux下准备Node.js环境（Linux Binaries版） | Liang Xinhui's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liang Xinhui's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">知识积累/ 技术交流</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2"><span class="nav-number">2.</span> <span class="nav-text">基本环境部署</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%B9%B6%E8%A7%A3%E5%8E%8BNode-js%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E5%8C%85"><span class="nav-number">2.1.</span> <span class="nav-text">获取并解压Node.js二进制文件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">2.2.</span> <span class="nav-text">设置环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85cnpm"><span class="nav-number">2.3.</span> <span class="nav-text">安装cnpm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85nodemon"><span class="nav-number">2.4.</span> <span class="nav-text">安装nodemon</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%90%AF%E5%8A%A8%E7%9B%B8%E5%85%B3"><span class="nav-number">3.</span> <span class="nav-text">自启动相关</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">梁鑫辉</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liangxinhui" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liangxinhui" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liangxinhui@qq.com" title="E-Mail → mailto:liangxinhui@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://liangxinhui.tech/2015/11/05/prepare_node_environment/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="梁鑫辉">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux下准备Node.js环境（Linux Binaries版） | Liang Xinhui's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux下准备Node.js环境（Linux Binaries版）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2015-11-05 08:27:00" itemprop="dateCreated datePublished" datetime="2015-11-05T08:27:00+08:00">2015-11-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>在Node.js的<a target="_blank" rel="noopener" href="https://nodejs.org/en/download/">官方下载网站</a>上，有<code>Linux Binaries(.tar.gz)</code>的包可供下载，但是却没有说明文档。<br>这里整理了<code>Linux Binaries(.tar.gz)</code>的一份安装说明。</p>
+<span id="more"></span>
+<p>以<code>Ubuntu</code>为例，其他Linux环境类似：</p>
+<h1 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h1><ul>
+<li>可运行Node.js</li>
+<li>针对国内网络环境，添加<a target="_blank" rel="noopener" href="http://npm.taobao.org/">淘宝cnpm</a>的支持</li>
+<li>添加<a href="">nodemon</a>，以便调整代码后自动重启</li>
+<li>添加开机自启动</li>
+</ul>
+<h1 id="基本环境部署"><a href="#基本环境部署" class="headerlink" title="基本环境部署"></a>基本环境部署</h1><h2 id="获取并解压Node-js二进制文件包"><a href="#获取并解压Node-js二进制文件包" class="headerlink" title="获取并解压Node.js二进制文件包"></a>获取并解压Node.js二进制文件包</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入安装包目标路径,根据个人喜好放置</span></span><br><span class="line"><span class="built_in">cd</span> /home/software</span><br><span class="line"><span class="comment"># 获取安装包</span></span><br><span class="line">wget https://nodejs.org/dist/v4.2.2/node-v4.2.2-linux-x64.tar.gz</span><br><span class="line"><span class="comment"># 解压</span></span><br><span class="line">tar xvzf node-v4.2.2-linux-x64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="设置环境变量"><a href="#设置环境变量" class="headerlink" title="设置环境变量"></a>设置环境变量</h2><p>这样，并不能在系统任意位置执行<code>node</code>或者<code>npm</code>.<br>需要将路径添加到<code>PATH</code>中。<br>编辑<code>/etc/profile</code>，修改<code>PATH</code>环境变量：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/home/software/node-v4.2.2-linux-x64/bin</span><br></pre></td></tr></table></figure>
+<p>这样，除了<code>node</code>主程序和自带的<code>npm</code>，每次通过<code>npm -g</code>安装的包，一般都能用非sudo访问了。</p>
+<p>添加sudo对npm的访问：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/npm /usr/local/bin/</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装cnpm"><a href="#安装cnpm" class="headerlink" title="安装cnpm"></a>安装cnpm</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/npm /usr/local/bin/</span><br></pre></td></tr></table></figure>
+<p>之后就可以用cnpm代替npm进行包管理了，速度会快很多。</p>
+<h2 id="安装nodemon"><a href="#安装nodemon" class="headerlink" title="安装nodemon"></a>安装nodemon</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cnpm install -g nodemon</span><br></pre></td></tr></table></figure>
+<p>由于已经设置过环境变量，此时可以直接运行<code>nodemon</code>了。</p>
+<h1 id="自启动相关"><a href="#自启动相关" class="headerlink" title="自启动相关"></a>自启动相关</h1><p>一般会把自启动命令添加到<code>/etc/rc.local</code>中，这样，系统重启时就会运行。<br>但是之前在<code>/etc/profile</code>中设置的环境变量，在<code>/etc/rc.local</code>中并不起作用。<br>我的做法是，在<code>/usr/local/bin</code>中添加<code>node</code>、<code>nodemon</code>这些程序的<code>软链接</code>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/node /usr/local/bin/</span><br><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/nodemon /usr/local/bin/</span><br></pre></td></tr></table></figure>
+<p>然后，在<code>/etc/rc.local</code>中便可以设置开机自启动了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入要启动程序的目录</span></span><br><span class="line"><span class="built_in">cd</span> /home/ubuntu/workspace/test</span><br><span class="line"><span class="comment"># 获取当前日期，格式为:20151105</span></span><br><span class="line">DATE=$(<span class="built_in">date</span> +%Y%m%d)</span><br><span class="line"><span class="comment"># 启动程序，并将日志计入当天日期的文件：log_20151105.txt</span></span><br><span class="line">sudo nodemon app.js &gt;&gt; log_<span class="variable">$&#123;DATE&#125;</span>.txt &amp;</span><br><span class="line"><span class="comment"># 恢复执行目录</span></span><br><span class="line"><span class="built_in">cd</span> -</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div></div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="梁鑫辉 微信">
+        <span>微信</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E5%AE%89%E8%A3%85/" rel="tag"># 安装</a>
+              <a href="/tags/node/" rel="tag"># node</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2015/11/04/pack_python_to_exe/" rel="prev" title="Python脚本打包成exe程序总结">
+                  <i class="fa fa-chevron-left"></i> Python脚本打包成exe程序总结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2015/12/09/debug_library_in_netbeans/" rel="next" title="通过NetBeans调试子项目">
+                  通过NetBeans调试子项目 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-pen-nib"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">梁鑫辉</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.staticfile.org/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="//cdn.staticfile.org/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/comments.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/utils.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/motion.min.js"></script><script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/next-boot.min.js"></script>
+
+  
+
+
+
+  <script src="//cdn.staticfile.org/hexo-theme-next/8.13.1/third-party/fancybox.min.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
