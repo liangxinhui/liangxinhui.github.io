@@ -1,0 +1,1666 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Ubuntu 普通用户增加 sudo 权限（不修改 sudoers 文件）</title>
+    <url>/2019/10/15/add-to-sudo-group/</url>
+    <content><![CDATA[<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>Ubuntu下，默认创建的用户可以通过sudo执行高级权限的动作。</p>
+<p>新创建的用户，如果执行sudo的话，会提示：</p>
+<blockquote>
+<p>username is not in the sudoers file.  This incident will be reported.</p>
+</blockquote>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>推荐解决办法：<strong>添加用户到sudo组</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 用  root 或者有 sudo 权限的用户执行</span></span><br><span class="line">sudo usermod -aG sudo &lt;username&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>需要重新登录用户后生效</li>
+</ul>
+<h1 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h1><p>查看 &#x2F;etc&#x2F;sudoers 文件，可以看到：</p>
+<span id="more"></span>
+
+<p><strong>sudo 用户组内的用户可以执行任何命令</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Allow members of group sudo to execute any command</span></span><br><span class="line">%sudo	ALL=(ALL:ALL) ALL</span><br></pre></td></tr></table></figure>
+
+<p>全文：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#</span><br><span class="line"># This file MUST be edited with the &#x27;visudo&#x27; command as root.</span><br><span class="line">#</span><br><span class="line"># Please consider adding local content in /etc/sudoers.d/ instead of</span><br><span class="line"># directly modifying this file.</span><br><span class="line">#</span><br><span class="line"># See the man page for details on how to write a sudoers file.</span><br><span class="line">#</span><br><span class="line">Defaults	env_reset</span><br><span class="line">Defaults	mail_badpass</span><br><span class="line">Defaults	secure_path=&quot;/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin&quot;</span><br><span class="line"></span><br><span class="line"># Host alias specification</span><br><span class="line"></span><br><span class="line"># User alias specification</span><br><span class="line"></span><br><span class="line"># Cmnd alias specification</span><br><span class="line"></span><br><span class="line"># User privilege specification</span><br><span class="line">root	ALL=(ALL:ALL) ALL</span><br><span class="line"></span><br><span class="line"># Members of the admin group may gain root privileges</span><br><span class="line">%admin ALL=(ALL) ALL</span><br><span class="line"></span><br><span class="line"># Allow members of group sudo to execute any command</span><br><span class="line">%sudo	ALL=(ALL:ALL) ALL</span><br><span class="line"></span><br><span class="line"># See sudoers(5) for more information on &quot;#include&quot; directives:</span><br><span class="line"></span><br><span class="line">#includedir /etc/sudoers.d</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h1><p>网上常见的方案是：</p>
+<p><a href="https://www.linuxidc.com/Linux/2016-07/133066.htm">Ubuntu报“xxx is not in the sudoers file.This incident will be reported” 错误解决方法</a></p>
+<p>需要一系列步骤：</p>
+<blockquote>
+<p>1.切换到root用户下<br>2.修改 &#x2F;etc&#x2F;sudoers权限或者使用visudo<br>3.编辑sudoers文件<br>4.撤销sudoers文件写权限</p>
+</blockquote>
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>相较于修改 &#x2F;etc&#x2F;sudoers 方案，添加到组的方案更简单易用。</p>
+]]></content>
+      <tags>
+        <tag>Ubuntu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CentOS 6.5 不升级系统库的情况下运行 高版本gcc编译的程序(c++11)</title>
+    <url>/2016/11/15/centos65_cpp11_support/</url>
+    <content><![CDATA[<h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>目标生产环境</p>
+<ul>
+<li>CentOS 6.5 64bit</li>
+<li>gcc 4.4.7</li>
+</ul>
+<p>想使用<code>C++11</code>的新特性，而该环境默认的<code>gcc 4.4.7</code>不支持。</p>
+<p>开发环境可以升级<code>gcc</code>。</p>
+<p>本文讨论在不升级生产环境<code>gcc</code>的情况下，如何编译程序，以便在该环境下使用<code>C++11</code>新特性编译好的程序。</p>
+<span id="more"></span>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><strong>要点</strong>：</p>
+<ul>
+<li>在同一内核和操作系统，高版本gcc下编译程序</li>
+<li>编译时将高版本的<code>libstdc++.so.6</code>库和可执行程序进行绑定</li>
+<li>将编译好的程序发布到目标系统运行</li>
+</ul>
+<p><strong>编译时，有两种方案</strong>：</p>
+<ul>
+<li>方案A（动态绑定）：<ul>
+<li>链接时，指定<code>rpath</code>参数</li>
+<li>把<code>libstdc++.so.6</code>随可执行程序发布</li>
+<li>此种方案，运行时会从指定的<code>rpath</code>路径加载<code>libstdc++.so.6</code></li>
+</ul>
+</li>
+<li>方案B（静态绑定）：<ul>
+<li>链接时，添加参数<code>-static-libgcc  -static-libstdc++</code></li>
+<li>此种方案，运行时不依赖<code>libstdc++.so.6</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="走过的弯路"><a href="#走过的弯路" class="headerlink" title="走过的弯路"></a>走过的弯路</h2><p>尝试解决此问题时，走了以下弯路，供参考：</p>
+<p><strong>刚开始，没有升级CentOS 6.5 的gcc，而是选在 Ubuntu 14.04 64bit（gcc 4.8.4）上编译。</strong></p>
+<ul>
+<li><p>该环境编译好的程序，如果直接在目标环境上运行，会有如下错误：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.17&#x27;</span> not found</span><br><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.14&#x27;</span> not found </span><br><span class="line">/usr/lib64/libstdc++.so.6: version <span class="string">&#x27;GLIBCXX_3.4.14&#x27;</span> not found</span><br><span class="line">/usr/lib64/libstdc++.so.6: version <span class="string">&#x27;GLIBCXX_3.4.19&#x27;</span> not found</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>尝试使用<code>-static-libgcc -static-stdlibc++</code>（静态绑定）方法执行后，依然有<code>libc.so.6</code>的版本问题。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.17&#x27;</span> not found</span><br><span class="line">/lib64/libc.so.6: version <span class="string">&#x27;GLIBC_2.14&#x27;</span> not found </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用<code>rpath</code>（动态绑定）方法，同时将<code>ubuntu</code>下的<code>libc.so.6</code>和<code>libstdc++.so.6</code>都放入生产环境，此时程序直接 <strong>coredump</strong>，挂在<code>libc.so</code>中：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Program received signal SIGSEGV, Segmentation fault.</span><br><span class="line">_dl_close_worker (map=0x7ffff7865132) at dl-close.c:113</span><br><span class="line">113	  --map-&gt;l_direct_opencount;</span><br><span class="line">(gdb) bt</span><br><span class="line"><span class="comment">#0  _dl_close_worker (map=0x7ffff7865132) at dl-close.c:113</span></span><br><span class="line"><span class="comment">#1  0x00000039c961496e in _dl_close (_map=0x7ffff7865132) at dl-close.c:757</span></span><br><span class="line"><span class="comment">#2  0x00007ffff781f58d in ?? () from /home/esunny/lib/libc.so.6</span></span><br><span class="line"><span class="comment">#3  0x00007ffff770ad67 in ?? () from /home/esunny/lib/libc.so.6</span></span><br><span class="line"><span class="comment">#4  0x00000039c960e705 in call_init (...) at dl-init.c:70</span></span><br><span class="line"><span class="comment">#5  _dl_init (...) at dl-init.c:134</span></span><br><span class="line"><span class="comment">#6  0x00000039c9600b3a in _dl_start_user () from /lib64/ld-linux-x86-64.so.2</span></span><br><span class="line"><span class="comment">#7  0x0000000000000001 in ?? ()</span></span><br><span class="line"><span class="comment">#8  0x00007fffffffe7a2 in ?? ()</span></span><br><span class="line"><span class="comment">#9  0x0000000000000000 in ?? ()</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>在同事的提醒下，尝试在CentOS下升级gcc至高版本后测试，程序正常运行。</p>
+</li>
+<li><p>原因分析：</p>
+<ul>
+<li>CentOS升级完gcc之后，<code>libc.so</code>没有变。</li>
+<li>这样，编译的时候，还是用的低版本<code>libc.so</code></li>
+<li>到生产环境，就没有<code>libc.so</code>的兼容性问题了</li>
+</ul>
+</li>
+</ul>
+<h2 id="经验教训"><a href="#经验教训" class="headerlink" title="经验教训"></a>经验教训</h2><p>对linux系统底层运行库了解不够详细。未考虑到不同平台编译时对<code>libc.so</code>的依赖有差别。</p>
+]]></content>
+      <tags>
+        <tag>CentOS</tag>
+        <tag>gcc</tag>
+        <tag>c++11</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CentOS打包rpm及其依赖用于离线安装</title>
+    <url>/2016/11/22/centos_yum_download_only_and_localinstall/</url>
+    <content><![CDATA[<h1 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h1><p>在某些封闭开发环境或生产环境，可能没有特定的yum源。此时，安装复杂依赖的rpm是一个比较头疼的问题，需要将一个个rpm包进行下载安装。<br>这里整理了一下可行的两个方案：</p>
+<ul>
+<li>downloadonly插件</li>
+<li>yum cache</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>以CentOS 6.5下安装devtoolset-3及其依赖为例。设置好devtoolset-3的repo源之后，按以下方法操作：</p>
+<h2 id="1-获取离线rpm包"><a href="#1-获取离线rpm包" class="headerlink" title="1.获取离线rpm包"></a>1.获取离线rpm包</h2><h3 id="方法A：downloadonly插件"><a href="#方法A：downloadonly插件" class="headerlink" title="方法A：downloadonly插件"></a>方法A：downloadonly插件</h3><p>该方法利用yum的downloadonly插件，将所需要的依赖仅下载到本地目录，而不安装。<br>尽在需要安装的目标主机中安装。</p>
+<p>1.安装downloadonly插件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install yum-plugin-downloadonly</span><br></pre></td></tr></table></figure>
+<p>2.下载rpm及其依赖</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install --downloadonly  --downloaddir=/root/myrpms/ devtoolset-3-gcc devtoolset-3-gcc-c++</span><br></pre></td></tr></table></figure>
+<p><strong><code>downloaddir</code>参数指定了rpm包的输出路径</strong></p>
+<h3 id="方法B：开启yum-cache"><a href="#方法B：开启yum-cache" class="headerlink" title="方法B：开启yum cache"></a>方法B：开启yum cache</h3><p>yum默认是不保存下载的rpm包的，如果需要，可以开启。<br>0. 开启yum的cache功能<br>修改<code>/etc/yum.conf</code>，将<code>keepcache</code>设置为<code>1</code>.<br>保存路径在<code>/etc/yum.conf</code>中可通过<code>cachedir</code>配置，默认为<code>/var/cache/yum/$basearch/$releasever</code><br>0. 按常规方法yum，安装 </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install devtoolset-3-gcc devtoolset-3-gcc-c++</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取离线包方法对比"><a href="#获取离线包方法对比" class="headerlink" title="获取离线包方法对比"></a>获取离线包方法对比</h3><ul>
+<li>downloadonly插件<ul>
+<li>优点：下载主机可以不用安装要下载的包</li>
+<li>缺点：需要提前一次性安装yum插件</li>
+</ul>
+</li>
+<li>yum cache<ul>
+<li>优点：不需要额外的插件</li>
+<li>缺点：修改配置后如果不改回来，占用本地空间；本地需要安装下载的rpm包</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-离线安装"><a href="#2-离线安装" class="headerlink" title="2.离线安装"></a>2.离线安装</h2><p>将rpm包及其依赖包拷贝到目标主机并进入rpm目录。执行以下命令离线安装：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum localinstall *</span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong></p>
+<ul>
+<li>这里不能指定具体的rpm包名，否则yum还会从系统配置的repo库中查找依赖，重新下载。</li>
+<li>建议将需要安装的包及其依赖都放在一个目录下，然后用<code>yum localinstall *</code>命令安装，这时，会自动安排依赖，依次安装。</li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="http://297020555.blog.51cto.com/1396304/530703">利用yum下载软件包的三种方法</a></li>
+<li><a href="http://blog.csdn.net/wenwenxiong/article/details/51746231">解决Linux 软件包的依赖关系</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>CentOS</tag>
+        <tag>rpm</tag>
+        <tag>离线</tag>
+        <tag>依赖</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows10 下安装 Linotronic 530 虚拟打印机（64位）</title>
+    <url>/2019/08/28/Linotronic-530-64bit/</url>
+    <content><![CDATA[<p>在印刷行业，一些老的用户还是习惯用<code>CorelDRAW 9</code>。而<code>CorelDRAW 9</code>的<code>pdf导入</code>功能太弱，很多不兼容。</p>
+<p>在<code>XP</code>年代，当需要将<code>Word文档</code>或者<code>方正书版</code>生成的文件在<code>CorelDRAW 9</code>中进行排版时，一般的步骤为：</p>
+<ul>
+<li>添加虚拟打印机<code>Linotronic 530-RIP 30 v52.3</code></li>
+<li>在<code>Word</code>或者<code>方正书版</code>中，通过虚拟打印机<code>Linotronic 530-RIP 30 v52.3</code>生成<code>prn</code>文件。</li>
+<li>在<code>CorelDRAW 9</code>中导入<code>prn</code>文件。</li>
+</ul>
+<p>当系统升级到<code>Win7</code>或者<code>Win10</code>时，系统的打印机驱动列表中，去掉了<code>Linotronic</code>系列的打印机。</p>
+<span id="more"></span>
+
+<hr>
+<p>网上一些很好的教程会指导安装 <code>Win7 32位</code> 下的 <code>Linotronic 530-RIP 30 v52.3</code>。</p>
+<p>主要流程为：</p>
+<ul>
+<li>导出或下载<code>XP 32位</code>下的<code>Linotronic 530-RIP 30 v52.3</code>驱动安装文件到 Win7 32位 系统<ul>
+<li><code>C:\WINDOWS\inf\ntprint.inf</code>文件</li>
+<li><code>C:\WINDOWS\system32\spool\drivers\w32x86\3</code>下的驱动文件</li>
+</ul>
+</li>
+<li>添加虚拟打印机，手工选择<code>ntprint.inf</code>文件</li>
+<li>点击下一步，按提示选择缺失的驱动文件</li>
+</ul>
+<p>参考：<a href="https://zhidao.baidu.com/question/1992083853597810387.html">你好，这个问题，windows7 64位添加Linotronic 530 v52.3打印机是怎么解决的？非常感激！</a></p>
+<hr>
+<p>到了<code>Win10</code> 年代，系统硬件升级很快, 很多电脑也都用上了大内存，升级为<code>64位</code>。</p>
+<p>按照网上的很多说法，<code>Linotronic 530-RIP 30 v52.3</code> 在<code>64位</code>下不可用。</p>
+<p>经测试，从<code>XP 64位原版系统</code> 中提取的打印机驱动，可在<code>Win10 64位</code>下正常使用。</p>
+<p>路径为：</p>
+<ul>
+<li><code>C:\WINDOWS\inf\ntprint.inf</code></li>
+<li><code>C:\WINDOWS\system32\spool\drivers\x64\3</code></li>
+</ul>
+<p>安装流程同上。</p>
+<p>附百度网盘链接：</p>
+<blockquote>
+<p>链接：<a href="https://pan.baidu.com/s/18cTe7iTvAbiteWwjYI1ynw">https://pan.baidu.com/s/18cTe7iTvAbiteWwjYI1ynw</a><br>提取码：s66w </p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>Linotronic</tag>
+        <tag>prn文件</tag>
+        <tag>CorelDRAW</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>通过NetBeans调试子项目</title>
+    <url>/2015/12/09/debug_library_in_netbeans/</url>
+    <content><![CDATA[<p>通过NetBeans调试C++动态库时，有可能出现进不了子项目的情况。</p>
+<span id="more"></span>
+<h1 id="可参考NetBeans自带的样例。"><a href="#可参考NetBeans自带的样例。" class="headerlink" title="可参考NetBeans自带的样例。"></a>可参考NetBeans自带的<code>样例</code>。</h1><h2 id="创建方法："><a href="#创建方法：" class="headerlink" title="创建方法："></a>创建方法：</h2><p><code>新建项目</code>  &gt; <code>样例</code> &gt; <code>C++</code> &gt; <code>子项目应用程序</code></p>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><p>该<code>样例</code>会创建5个项目：</p>
+<ul>
+<li>1个主项目</li>
+<li>2个静态库</li>
+<li>2个动态库</li>
+</ul>
+<h2 id="关键点"><a href="#关键点" class="headerlink" title="关键点"></a>关键点</h2><p>通过查看<code>主项目</code>的<code>项目属性</code>，可以发现：<br><code>链接器</code>选项中，<code>库</code>里添加了<code>子项目</code>。</p>
+]]></content>
+      <tags>
+        <tag>IDE</tag>
+        <tag>开发</tag>
+        <tag>NetBeans</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Confluence 6.0.3 安装手记</title>
+    <url>/2016/12/23/confluence_install_step_by_step/</url>
+    <content><![CDATA[<h1 id="Confluence简介"><a href="#Confluence简介" class="headerlink" title="Confluence简介"></a>Confluence简介</h1><p><a href="https://www.atlassian.com/software/confluence">Confluence</a> 是 <a href="https://www.atlassian.com/">atlassian</a> 出品的一个企业知识管理与协同软件。可以和Jara等管理工具集成。</p>
+<p>功能方面：</p>
+<ul>
+<li>原生支持各种文档（word、excel、ppt、pdf等）的在线预览。</li>
+<li>原生支持代码高亮</li>
+<li>强大的模板（可自定义）</li>
+<li>强大的宏定义</li>
+<li>强大的插件支持</li>
+<li>开放API</li>
+<li>支持与其他系统集成</li>
+<li>有专门的插件市场，插件丰富</li>
+<li>提供二次开发接口和文档</li>
+</ul>
+<p>我认为是目前最好用的知识库软件。<br>近期尝试安装了下最新版，记录了安装过程。给需要的朋友参考。<br>主要梳理了以下内容：</p>
+<ul>
+<li>安装环境</li>
+<li>数据库配置</li>
+<li>汉化</li>
+</ul>
+<p>特别是汉化部分，网上之前收到的文章都比较零碎。这里结合自己的实际安装过程，做了整理。</p>
+<span id="more"></span>
+<hr>
+<h1 id="基本环境"><a href="#基本环境" class="headerlink" title="基本环境"></a>基本环境</h1><h2 id="操作系统"><a href="#操作系统" class="headerlink" title="操作系统"></a>操作系统</h2><p>Confluence支持在windows &#x2F; linux 下安装。 32bit&#x2F;64bit 均可。<br>我这里是在linux下安装的，试验的平台为：Ubuntu 16.04&#x2F;14.04 64bit</p>
+<h2 id="安装包"><a href="#安装包" class="headerlink" title="安装包"></a>安装包</h2><p>atlassian-confluence-6.0.3-x64.bin</p>
+<h1 id="环境依赖"><a href="#环境依赖" class="headerlink" title="环境依赖"></a>环境依赖</h1><h2 id="JRE"><a href="#JRE" class="headerlink" title="JRE"></a>JRE</h2><p>安装包中集成的有，不需要单独安装。<br>如果本地有java环境的话，默认也会使用它集成的java环境。</p>
+<h2 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h2><p>自带小型数据库。生产环境建议使用更好性能的数据库。这里采用MySQL。</p>
+<hr>
+<h1 id="数据库配置"><a href="#数据库配置" class="headerlink" title="数据库配置"></a>数据库配置</h1><h2 id="数据库安装"><a href="#数据库安装" class="headerlink" title="数据库安装"></a>数据库安装</h2><p>ubuntu server minimal安装的话，没有数据库环境，需要自行安装：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install mysql-server</span><br></pre></td></tr></table></figure>
+<h2 id="数据库配置-1"><a href="#数据库配置-1" class="headerlink" title="数据库配置"></a>数据库配置</h2><p>主要参考：<a href="https://confluence.atlassian.com/doc/database-setup-for-mysql-128747.html">Atlassian 官方 MySQL 安装指导</a>：</p>
+<ol>
+<li>修改<code>my.ini</code><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line"><span class="comment"># 设置默认编码为utf8</span></span><br><span class="line">character-set-server=utf8</span><br><span class="line">collation-server=utf8_bin</span><br><span class="line"><span class="comment"># 指定最大允许的包大小在256M以上（如果这里不调整，默认值为16M，大点的插件包就安装不上了）</span></span><br><span class="line">max_allowed_packet=256M</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置默认存储引擎为InnoDB （不设置也可以）</span></span><br><span class="line">default-storage-engine=INNODB</span><br><span class="line"><span class="comment"># 指定innodb日志文件至少为2G（对这部分内容不太了解，如果不设置，运行中弹出警告）</span></span><br><span class="line">innodb_log_file_size=2GB</span><br><span class="line"><span class="comment"># 如果有 sql_mode = NO_AUTO_VALUE_ON_ZERO的话，确保是注释掉的。</span></span><br><span class="line"><span class="comment">#sql_mode = NO_AUTO_VALUE_ON_ZERO</span></span><br></pre></td></tr></table></figure>
+注意：<br>关于配置默认引擎为<code>InnoDB</code>：</li>
+</ol>
+<ul>
+<li>ubuntu 14.04 :<ul>
+<li>通过apt-get install 安装的mysql版本为<code>5.5.53</code></li>
+<li>如果配置默认引擎为<code>InnoDB</code>，数据库起不来。</li>
+<li>忽略该配置项后，不影响正常使用。</li>
+</ul>
+</li>
+<li>ubuntu 16.04 <ul>
+<li>通过apt-get install 安装的mysql版本为<code>5.7.16</code></li>
+<li>配置默认引擎为<code>InnoDB</code>没有问题。</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li>重启mysql服务<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo service mysql restart</span><br></pre></td></tr></table></figure></li>
+<li>创建数据库和用户<br>需要在msyql终端中运行:<br>a. 创建数据库confluence<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> DATABASE confluence <span class="type">CHARACTER</span> <span class="keyword">SET</span> utf8 <span class="keyword">COLLATE</span> utf8_bin;</span><br></pre></td></tr></table></figure>
+根据需要可修改数据库名称，在配置数据库连接的时候，确保一致即可。<br>这里要特别注意，数据库的字符集要设置成utf8的，否则中文会有乱码。<br>b. 设置数据库访问权限<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> <span class="keyword">ALL</span> PRIVILEGES <span class="keyword">ON</span> confluence.<span class="operator">*</span> <span class="keyword">TO</span> <span class="string">&#x27;confluenceuser&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED <span class="keyword">BY</span> <span class="string">&#x27;confluencepass&#x27;</span>;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+确保<code>confluenceuser</code>用户可以以密码<code>confluencepass</code>,通过<code>localhost</code>访问<code>confluence</code>下的所有数据表。</li>
+</ol>
+<p>具体用户名密码，自行修改。</p>
+<hr>
+<h1 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h1><h2 id="执行安装包"><a href="#执行安装包" class="headerlink" title="执行安装包"></a>执行安装包</h2><p>官方安装包已经打包好环境依赖，安装很简单，直接运行，按照提示安装即可。<br>需要root权限，因为安装过程中要创建一个confluence账户。<br>安装好之后，主要有以下两个目录：</p>
+<ul>
+<li><code>/opt/atlassian/confluence/</code> : 主程序所在目录</li>
+<li><code>/var/atlassian/application-data/</code> ： 数据文件、运行日志所在目录</li>
+</ul>
+<h2 id="数据库连接驱动"><a href="#数据库连接驱动" class="headerlink" title="数据库连接驱动"></a>数据库连接驱动</h2><p>因为License的原因，confluence 安装包里没有集成MySQL的Java连接驱动。可以从<code>MySQL</code>官网下载（文末有百度网盘共享）：<br><a href="http://dev.mysql.com/downloads/connector/j/">MySQL官方Java连接驱动下载链接</a></p>
+<p>安装完成后，需要把数据库驱动<code>jar</code>文件放入以下文件夹：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> &lt;Confluence installation&gt; /confluence/WEB-INF/lib </span><br><span class="line"></span><br><span class="line"># &lt;Confluence installation&gt; 默认路径为`/opt/atlassian/confluence/`</span><br><span class="line"># 所以，这里的路径，默认为：</span><br><span class="line"># /opt/atlassian/confluence/confluence/WEB-INF/lib/</span><br></pre></td></tr></table></figure>
+<p>这一步<strong>非常重要</strong>，否则的话系统配置页面会直接崩溃，<code>HTTP 500</code> 错误。<br>因为还没有提示开始配置数据库，根据错误提示，也很难定位到这里。</p>
+<h2 id="初次配置"><a href="#初次配置" class="headerlink" title="初次配置"></a>初次配置</h2><p>根据提示的地址（默认为 <a href="http://localhost:8090/">http://localhost:8090</a> ），打开网站。<br>第一次会提示你一步步进行配置：（这方面网上资料比价多，就不贴图片了）</p>
+<ul>
+<li>运行环境可以选Production或者Trail，建议直接选Production</li>
+<li>插件集成，直接跳过即可</li>
+<li>接下来是数据库配置<ul>
+<li>这里要特别注意：一定要配置好数据库驱动（配置方法见上文） </li>
+<li>选MySQL后，会提示你输入数据库名、用户名、密码</li>
+<li>这个页面要特别注意，需要把utf8相关的参数，添加在连接字符串的后边<br>如果没有License，可以免费申请一个月的试用。</li>
+</ul>
+</li>
+<li>数据库配好后，会提示初始类型（演示站点、空网站、从老数据库恢复等）。</li>
+<li>网站初始化需要一些时间</li>
+<li>之后就可以使用了</li>
+</ul>
+<hr>
+<h1 id="汉化"><a href="#汉化" class="headerlink" title="汉化"></a>汉化</h1><p>作为中国用户，汉化完的界面更习惯一些，下面介绍具体的步骤。</p>
+<h2 id="数据库相关"><a href="#数据库相关" class="headerlink" title="数据库相关"></a>数据库相关</h2><p>这部分内容，上边已经介绍了很多。按照上边的设置好utf8即可，不再赘述。<br>如果有问题，可以参考这个官方指导进行排查：<a href="https://confluence.atlassian.com/doc/configuring-database-character-encoding-177698.html">configuring-database-character-encoding</a></p>
+<h2 id="界面语言包"><a href="#界面语言包" class="headerlink" title="界面语言包"></a>界面语言包</h2><p>confluence 的语言可以在设置界面的 <code>Language</code> 页面配置。<br>atlassian官方没有提供confluence的中文界面支持。但是提供了一个<a href="https://translations.atlassian.com/">翻译计划平台</a>.<br>从这里可以下载：<a href="https://translations.atlassian.com/dashboard/download?lang=zh_CN#/Confluence">Confluence或者其他atlassian的简体中文语言包</a><br>目前(2016年12月23日)最新版是 <code>6.0.0-rc</code>，完美支持<code>confluence 6.0.3</code>。<br>下载安装后，以<code>Add-on</code>方式安装即可。<br><strong>感谢志愿者的辛勤付出！</strong></p>
+<h2 id="PDF中文输出"><a href="#PDF中文输出" class="headerlink" title="PDF中文输出"></a>PDF中文输出</h2><p>confluence有个导出pdf的功能。但是默认情况下，是不能导出中文的。<br>在设置页面，有个更改默认字体的选项，选择windows自带的的ttf字体（宋体、微软雅黑等），即可解决。<br>实时生效，不需要重启系统。</p>
+<h2 id="Office文档预览乱码"><a href="#Office文档预览乱码" class="headerlink" title="Office文档预览乱码"></a>Office文档预览乱码</h2><p>这个是目前遇到的解决起来最复杂的一个问题了。<br>confluence有个附件预览的功能，无需下载，即可查看word、excel 、ppt、pdf等附件。<br>但是问题就是，它对中文的识别不好，默认是方框。<br>参考官方知识库的文章:<a href="https://confluence.atlassian.com/confkb/the-text-in-a-powerpoint-excel-or-word-document-looks-different-when-using-the-viewfile-macro-200213562.html">The Text in a PowerPoint, Excel or Word Document Looks Different when Using the Viewfile Macro</a><br>要点如下：</p>
+<ol>
+<li>关闭confluence</li>
+<li>安装windows字体<br>   网上好多地方说需要安装ttf-mscorefonts-installer。这是linux下windows核心字体的下载器。但是这个字体里边没有中文的。<br>   建议直接从中文windows（<code>C:/windows/fonts</code>）里拷贝字体文件。<br>  放到linux系统的 <code>/user/local/winfonts</code> 目录（可放置在任意目录）。</li>
+<li>配置confluence启动环境<br>找到<code>/opt/atlassian/confluence/bin/setenv.sh</code>中的<code>CATALINA_OPTS</code>,添加一行：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CATALINA_OPTS=&quot;-Dconfluence.document.conversion.fontpath=/user/local/winfonts $&#123;CATALINA_OPTS&#125;&quot;</span><br></pre></td></tr></table></figure>
+注意：<code>fontpath=</code>后边的路径，根据实际情况修改。</li>
+<li>清理渲染缓存<br>渲染过的文件会有缓存，提高以后加载的效率。<br>安装完字体后，需要删掉缓存，否在原来渲染过的文件不会更新。<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;confluence_home&gt;/viewfile/</span><br><span class="line">&lt;confluence_home&gt;/shared-home/dcl-thumbnail/</span><br><span class="line">&lt;confluence_home&gt;/shared-home/dcl-document/</span><br><span class="line"># &lt;confluence_home&gt; 默认为 /var/atlassian/application-data/confluence/</span><br></pre></td></tr></table></figure></li>
+<li>重启confluence服务</li>
+</ol>
+<hr>
+<h1 id="扩展插件"><a href="#扩展插件" class="headerlink" title="扩展插件"></a>扩展插件</h1><p>atlassian 的插件市场内容还是很多的，付费和免费的都有。大家根据需要自己选择安装。<br>推荐两个<code>UML</code>相关的免费插件：</p>
+<ul>
+<li><a href="">PlantUML</a><ul>
+<li>可使用文本语言渲染出UML图</li>
+<li>支持dot语法</li>
+</ul>
+</li>
+<li><a href="">Astah</a><ul>
+<li>支持原生asta文件的渲染</li>
+<li>支持多页面</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="其他细节问题"><a href="#其他细节问题" class="headerlink" title="其他细节问题"></a>其他细节问题</h1><h2 id="Add-on管理页面加载慢"><a href="#Add-on管理页面加载慢" class="headerlink" title="Add-on管理页面加载慢"></a>Add-on管理页面加载慢</h2><p>国内环境访问atlassian市场不行，可以在配置页面关掉对市场的访问，采用离线上传的方式进行安装。</p>
+<h2 id="编辑页面工具栏，添加自定义宏命令"><a href="#编辑页面工具栏，添加自定义宏命令" class="headerlink" title="编辑页面工具栏，添加自定义宏命令"></a>编辑页面工具栏，添加自定义宏命令</h2><p>这个也没有原生配置，可能需要配合插件实现。<br>不过大家建议的方案是有个更好的办法就是，直接输入<code>&#123;</code>和你要使用宏的前几个字母，<code>confluence</code>会自动给出提示。<br>例如: <code>&#123;cod</code>会找到<code>代码块</code>，<code>&#123;pla</code>会找到<code>PlantUML</code>。</p>
+<hr>
+<h1 id="资源下载"><a href="#资源下载" class="headerlink" title="资源下载"></a>资源下载</h1><p>由于GFW的原因，国内下载confluence比较慢。<br>我把相关的资源放到百度网盘了:<br>百度网盘：<a href="http://pan.baidu.com/s/1cra0yy">Confluence 6.0.3 Linux 64bit 安装包</a><br>提取码：<code>ue3r</code></p>
+]]></content>
+      <tags>
+        <tag>Confluence</tag>
+        <tag>安装</tag>
+        <tag>插件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>国内环境通过阿里云安装Docker</title>
+    <url>/2019/07/18/docker-install-aliyun/</url>
+    <content><![CDATA[<p>国内安装Docker比较慢。可以使用阿里云的镜像。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun</span><br></pre></td></tr></table></figure>
+
+<p>安装好之后，根据提示，添加用户到<code>docker</code>组，可以在执行docker指令时不用输入<code>sudo</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 添加用户到用户组</span></span><br><span class="line">sudo usermod -aG docker &lt;your-username&gt;</span><br><span class="line"><span class="comment"># 重启docker服务</span></span><br><span class="line">sudo systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:</strong> 以上操作完成后，需要重新登录用户才能生效。</p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+        <tag>aliyun</tag>
+        <tag>镜像</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker 镜像压缩导出</title>
+    <url>/2019/11/19/docker-image-save-gzip/</url>
+    <content><![CDATA[<p>Docker默认的<code>image save</code> 功能是<code>tar</code>格式的，没有经过压缩。</p>
+<p>如果需要在多个节点或网络环境传输的话，可以用<code>gzip</code>压缩一下。具体操作方法为：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 保存</span></span><br><span class="line">docker image save &lt;your_image&gt; | gzip &gt; image_file.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入(可直接导入tar.gz的包，不需要先解压)</span></span><br><span class="line">docker image load &lt; image_file.tar.gz</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <tags>
+        <tag>docker</tag>
+        <tag>gzip</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>docker 实践经验</title>
+    <url>/2020/01/15/docker-practices/</url>
+    <content><![CDATA[<h1 id="安装部署"><a href="#安装部署" class="headerlink" title="安装部署"></a>安装部署</h1><p>联网环境下，可使用阿里云镜像，方法参照：<br><a href="https://liangxinhui.tech/2019/07/18/docker-install-aliyun/">https://liangxinhui.tech/2019/07/18/docker-install-aliyun/</a></p>
+<p>离线安装，可用二进制包，直接解压即可使用。</p>
+<h1 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h1><p>Dockerfile 作为构建 Docker 镜像的描述文件。</p>
+<span id="more"></span>
+
+<h2 id="几个概念"><a href="#几个概念" class="headerlink" title="几个概念"></a>几个概念</h2><h3 id="ADD-vs-COPY"><a href="#ADD-vs-COPY" class="headerlink" title="ADD vs COPY"></a>ADD vs COPY</h3><p>这两个命令都有向镜像中添加文件的功能。</p>
+<p>参考：<a href="https://www.cnblogs.com/sparkdev/p/9573248.html">Dockerfile 中的 COPY 与 ADD 命令</a></p>
+<p>COPY 和 ADD 共同点：</p>
+<ul>
+<li>不能拷贝上下文之外的本地文件</li>
+<li>只复制目录中的内容而不包含目录自身</li>
+<li>目标地址以<code>/</code>结尾时，表示目录。否则为文件</li>
+</ul>
+<p>区别：</p>
+<ul>
+<li>COPY：拷贝文件或目录到容器中。multistage 构建时可以使用 COPY 命令把前一阶段构建的产物拷贝到另一个镜像中。</li>
+<li>ADD：除了不能用在 multistage 的场景下，ADD 命令可以完成 COPY 命令的所有功能，另外可以：<ul>
+<li>解压压缩文件并把它们添加到镜像中</li>
+<li>从 url 拷贝文件到镜像中（不推荐）</li>
+</ul>
+</li>
+</ul>
+<p><strong>docker 官方建议我们当需要从远程复制文件时，最好使用 curl 或 wget 命令来代替 ADD 命令。原因是，当使用 ADD 命令时，会创建更多的镜像层，当然镜像的 size 也会更大。</strong></p>
+<p>综合来说，COPY 更简单易懂，需要解压文件时可以使用 ADD。</p>
+<h3 id="CMD-vs-ENTRYPOINT"><a href="#CMD-vs-ENTRYPOINT" class="headerlink" title="CMD vs ENTRYPOINT"></a>CMD vs ENTRYPOINT</h3><p>这两个参数都可以指定 Docker 容器的启动命令。</p>
+<p>参考：<a href="https://blog.csdn.net/u010900754/article/details/78526443">【docker】CMD ENTRYPOINT 区别 终极解读！</a></p>
+<ul>
+<li>ENTRYPOINT：容器入口。参数可被 CMD 内容覆盖。</li>
+<li>CMD: 整个命令可被 RUN 启动时很方便的替换</li>
+</ul>
+<p>使用建议：</p>
+<ul>
+<li>最灵活使用：CMD，可以在运行时随意修改</li>
+<li>限制启动命令，只改参数：ENTRYPOINT + CMD</li>
+</ul>
+<h3 id="WORKDIR"><a href="#WORKDIR" class="headerlink" title="WORKDIR"></a>WORKDIR</h3><p>WORKDIR 命令为后续的 RUN、CMD、COPY、ADD 等命令配置工作目录。<br>也是容器运行的工作目录。</p>
+<h2 id="示例-Dockerfile"><a href="#示例-Dockerfile" class="headerlink" title="示例 Dockerfile"></a>示例 Dockerfile</h2><ul>
+<li>基于 Ubuntu 18.04</li>
+<li>安装 python3</li>
+<li>阿里云 镜像源</li>
+<li>阿里云 pip 源</li>
+<li>常用基础工具（vim、ip、curl 等）</li>
+<li>jupyter notebook</li>
+</ul>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">18.04</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> sed -i <span class="string">&#x27;s/archive\.ubuntu\.com/mirrors.aliyun.com/g&#x27;</span> /etc/apt/sources.list</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> apt-get update &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	apt-get install  -yq  --no-install-recommends \</span></span><br><span class="line"><span class="language-bash">	build-essential wget ca-certificates python3 python3-dev default-libmysqlclient-dev libssl-dev &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	apt-get clean &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	<span class="built_in">rm</span> -rf /var/lib/apt/lists/* &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	<span class="built_in">ln</span> -sf /usr/bin/python3 /usr/bin/python</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># pip CN mirror</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> <span class="built_in">mkdir</span> -p ~/.pip &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	<span class="built_in">echo</span> <span class="string">&quot;[global]&quot;</span> &gt; ~/.pip/pip.conf &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	<span class="built_in">echo</span> <span class="string">&quot;trusted-host=mirrors.aliyun.com&quot;</span> &gt;&gt; ~/.pip/pip.conf &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	<span class="built_in">echo</span> <span class="string">&quot;index-url=https://mirrors.aliyun.com/pypi/simple/&quot;</span>  &gt;&gt; ~/.pip/pip.conf</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> wget -O get-pip.py  https://bootstrap.pypa.io/get-pip.py  &amp;&amp; python get-pip.py &amp;&amp; <span class="built_in">rm</span> get-pip.py</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># development basic tool</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> apt-get update &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	apt-get install  -yq  --no-install-recommends \</span></span><br><span class="line"><span class="language-bash">	vim curl iproute2 iputils-ping &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">	apt-get clean</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># notebook</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> pip3 install jupyter</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> .jupyter/ /root/.jupyter/</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /notebook</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8888</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [ <span class="string">&quot;jupyter&quot;</span>, <span class="string">&quot;notebook&quot;</span> ]</span></span><br></pre></td></tr></table></figure>
+
+<p>参考手册：<br><a href="https://docs.docker.com/reference/">https://docs.docker.com/reference/</a></p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>通过Docker下载任意版本ubuntu包及完整依赖</title>
+    <url>/2019/07/18/download_ubuntu_deb_with_docker/</url>
+    <content><![CDATA[<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>对于没有互联网环境的研发网，Ubuntu 软件包的离线安装比较麻烦。</p>
+<p>虽然可以使用<code>apt install --download-only</code>来下载，但是在这种情况下会有问题：</p>
+<ul>
+<li>安装包有很多依赖</li>
+<li>外网机器已经安装过其中一些依赖包</li>
+</ul>
+<p>此方法不会重新下载已安装的依赖文件。</p>
+<h1 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h1><p>借助docker镜像，解决依赖包下载不全的问题。</p>
+<h1 id="详细步骤"><a href="#详细步骤" class="headerlink" title="详细步骤"></a>详细步骤</h1><p>以 ubuntu 18.04 为例：</p>
+<span id="more"></span>
+
+<h2 id="创建并进入工作目录"><a href="#创建并进入工作目录" class="headerlink" title="创建并进入工作目录"></a>创建并进入工作目录</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> ubuntu_downloader</span><br><span class="line"><span class="built_in">cd</span> ubuntu_downloader</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建Dockerfile"><a href="#创建Dockerfile" class="headerlink" title="创建Dockerfile"></a>创建Dockerfile</h2><p>文件：<code>ubuntu_downloader/Dockerfile</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Dockerfile</span><br><span class="line">FROM ubuntu:18.04</span><br><span class="line"></span><br><span class="line">RUN sed -i &#x27;s/archive\.ubuntu\.com/mirrors.aliyun.com/g&#x27; /etc/apt/sources.list &amp;&amp; \</span><br><span class="line">    grep aliyun /etc/apt/sources.list &gt; /tmp/sources.list &amp;&amp; \</span><br><span class="line">    mv -f /tmp/sources.list /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建下载脚本"><a href="#创建下载脚本" class="headerlink" title="创建下载脚本"></a>创建下载脚本</h2><p>文件：<code>ubuntu_downloader/ubuntu_download.sh</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">base_download_dir=/tmp/ubuntu_download</span><br><span class="line">package_list=<span class="string">&quot;<span class="variable">$@</span>&quot;</span></span><br><span class="line">package_dir_name=<span class="variable">$&#123;package_list//&quot; &quot;/&quot;_&quot;&#125;</span> </span><br><span class="line">package_dir_full=<span class="variable">$base_download_dir</span>/<span class="variable">$package_dir_name</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="variable">$package_dir_full</span></span><br><span class="line"></span><br><span class="line">docker run -v <span class="variable">$package_dir_full</span>:/var/cache/apt/archives ubuntu1804_downloader sh -c <span class="string">&quot;apt update &amp;&amp; apt install --download-only -y <span class="variable">$package_list</span> &quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="下载文件"><a href="#下载文件" class="headerlink" title="下载文件"></a>下载文件</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./ubuntu_download.sh yourpackage1 yourkackage2 ...</span><br></pre></td></tr></table></figure>
+<p>下载后，文件保存在 <code>/tmp/ubuntu_download/yourpackage1_yourkackage2</code> 目录。</p>
+<h2 id="离线安装"><a href="#离线安装" class="headerlink" title="离线安装"></a>离线安装</h2><p>对于依赖关系少的安装包，可以用 <code>dpkg -i </code> 手动安装deb包。</p>
+<p>如果依赖关系较多，可自定义本地安装源。</p>
+<p>详细可参考：</p>
+<ul>
+<li><a href="https://www.cnblogs.com/lianshuiwuyi/p/11118470.html">Ubuntu18.04制作本地源</a></li>
+<li><a href="https://www.cnblogs.com/longchang/p/11088411.html">ubuntu18.04 本地源制作</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Ubuntu</tag>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>echarts 大数据量绘图</title>
+    <url>/2019/12/25/echarts-big-data/</url>
+    <content><![CDATA[<p>使用 echarts 进行大数据量绘图时，可通过以下方法改善性能。</p>
+<ul>
+<li>关掉动画： <a href="https://www.echartsjs.com/zh/option.html#animation">animation</a></li>
+<li>使用采样：series 下增加 <a href="https://www.echartsjs.com/zh/option.html#series-line.sampling">sampling</a> 属性</li>
+<li>使用 <a href="https://www.echartsjs.com/zh/option.html#dataZoom">dataZoom</a> 局部加载（如果设置为 0-100，对第一次加载速度没有提升。主要目的是改善操作体验。）<ul>
+<li>dataZoom 有三种类型<ul>
+<li>inside：嵌入图形（可以用鼠标点击，在图形中进行上下左右移动）</li>
+<li>slider：滑块（在侧边，通过拖拽进行缩放）</li>
+<li>select：通过 <code>toolbox.feature.dataZoom</code> 实现，可用鼠标选择缩放区域、保存图形等。</li>
+</ul>
+</li>
+<li>dataZoom 可以控制多个 Axis</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> options = &#123;</span><br><span class="line">  <span class="attr">animation</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">toolbox</span>: &#123;</span><br><span class="line">    <span class="attr">show</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">feature</span>: &#123;</span><br><span class="line">      <span class="attr">dataZoom</span>: &#123;</span><br><span class="line">        <span class="attr">yAxisIndex</span>: <span class="string">&quot;none&quot;</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">restore</span>: &#123;&#125;,</span><br><span class="line">      <span class="attr">saveAsImage</span>: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">dataZoom</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">type</span>: <span class="string">&quot;inside&quot;</span>,</span><br><span class="line">      <span class="attr">start</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="attr">end</span>: <span class="number">100</span>,</span><br><span class="line">      <span class="attr">xAxisIndex</span>: axis_ids</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">start</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="attr">end</span>: <span class="number">100</span>,</span><br><span class="line">      <span class="attr">type</span>: <span class="string">&quot;slider&quot;</span>,</span><br><span class="line">      <span class="attr">xAxisIndex</span>: axis_ids</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="attr">series</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">type</span>: <span class="string">&quot;line&quot;</span>,</span><br><span class="line">      <span class="attr">sampling</span>: <span class="string">&quot;average&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>echarts</tag>
+        <tag>数据可视化</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Electron 窗口启动优化</title>
+    <url>/2019/12/25/electron-show-window-on-ready/</url>
+    <content><![CDATA[<p>electron 程序在第一次启动时要加载很多内容，默认会有一段白屏的时间。</p>
+<p>可通过以下方法优化：</p>
+<ul>
+<li>创建窗口时不显示</li>
+<li>当渲染完成时再显示</li>
+</ul>
+<p>参考代码为：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">mainWindow = <span class="keyword">new</span> <span class="title class_">BrowserWindow</span>(&#123;</span><br><span class="line">  <span class="attr">show</span>: <span class="literal">false</span></span><br><span class="line">&#125;);</span><br><span class="line">mainWindow.<span class="title function_">loadURL</span>(winURL);</span><br><span class="line">mainWindow.<span class="title function_">on</span>(<span class="string">&quot;ready-to-show&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  mainWindow.<span class="title function_">show</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>electron</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>electron-vue 构建 windows 应用时的一些问题记录</title>
+    <url>/2019/12/25/electron-vue-build/</url>
+    <content><![CDATA[<p>用 electron-vue 构建 windows 桌面应用，包构建器为 electron-builder 。</p>
+<p>在执行 npm run build 时，会出现各种异常，关键点整理如下：</p>
+<h1 id="不要使用-cnpm-进行安装，改用-yarn"><a href="#不要使用-cnpm-进行安装，改用-yarn" class="headerlink" title="不要使用 cnpm 进行安装，改用 yarn"></a>不要使用 cnpm 进行安装，改用 yarn</h1><p>可使用 yarn 国内加速, 配置：</p>
+<pre>
+yarn config set registry "https://registry.npm.taobao.org"
+yarn config set sass_binary_site "https://npm.taobao.org/mirrors/node-sass/"
+yarn config set phantomjs_cdnurl "http://cnpmjs.org/downloads"
+yarn config set electron_mirror "https://npm.taobao.org/mirrors/electron/"
+yarn config set sqlite3_binary_host_mirror "https://foxgis.oss-cn-shanghai.aliyuncs.com/"
+yarn config set profiler_binary_host_mirror "https://npm.taobao.org/mirrors/node-inspector/"
+yarn config set chromedriver_cdnurl "https://cdn.npm.taobao.org/dist/chromedriver"
+</pre>
+
+<p>注意：只添加第一个时，会出现编译 fresh package 卡住的情况，推荐全都添加。</p>
+<h1 id="build-时会出现下载包超时的情况"><a href="#build-时会出现下载包超时的情况" class="headerlink" title="build 时会出现下载包超时的情况"></a>build 时会出现下载包超时的情况</h1><p>解决方案：<a href="https://segmentfault.com/a/1190000018533945">electron 打包踩过的坑总结</a></p>
+<p>大致思路是，根据控制台下载提示，手工下载一些包到对应的目录。</p>
+<ul>
+<li>electron，不需要解压，放在 <code>AppData\Local\electron\Cache</code> 下面。</li>
+<li>electron-builder 对应的包，需要解压到 <code>AppData\Local\electron-builder\cache\&lt;包名&gt;\&lt;包名+版本号&gt;</code>。</li>
+</ul>
+<p>详细目录为：（X.X.X.X 代表版本号）</p>
+<ul>
+<li>AppData\Local\electron\Cache（不需要解压）<ul>
+<li>electron-vX.X.X-win32-x64.zip</li>
+<li>SHASUMS256.txt-X.X.X</li>
+</ul>
+</li>
+<li>AppData\Local\electron-builder\cache （有版本号的目录下为解压过，包含 exe 的目录）<ul>
+<li>winCoseSign<ul>
+<li>winCodeSign-X.X.X</li>
+</ul>
+</li>
+<li>nsis<ul>
+<li>nsis-X.X.X.X</li>
+<li>nsis-resources-X.X.X.X</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>electron</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>方正书版PN注解实现页码功能</title>
+    <url>/2019/04/21/fangzheng-shuban-PN-yema/</url>
+    <content><![CDATA[<h1 id="PN-（页号注解）"><a href="#PN-（页号注解）" class="headerlink" title="PN （页号注解）"></a>PN （页号注解）</h1><p>页号注解（PN）</p>
+<h2 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h2><p>〖PN〔《标识符》〕&lt;页号参数&gt;〗</p>
+<p>〖PN(〔《标识符》〕&lt;页号参数&gt;〗&lt;页号内容&gt;〖PN)〗</p>
+<span id="more"></span>
+
+<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><p>&lt;页号参数&gt;：〔－&lt;页号类型&gt;〕〔Y&lt;页号出现方式&gt;〕〔&lt;页号位置&gt;〕〔V&lt;排版方向&gt;〕〔P&lt;当前页号&gt;〕〔＋&lt;页号间隔&gt;〕〔K&lt;页码显示位数&gt;〕</p>
+<p>&lt;页号类型&gt;：{L|R|B|H|(|(S|F|FH|FL|S|.}〔Z〔＃〕〕〔^〕</p>
+<p>&lt;页号出现方式&gt;：{0│1│2│3│-n}</p>
+<p>&lt;页号位置&gt;：&lt;!│＝&gt;{&lt;预设位置&gt;│&lt;自定义位置&gt;}</p>
+<p>&lt;预设位置&gt;：@&lt;数字&gt;</p>
+<p>&lt;数字&gt;：从1（或者01）到12</p>
+<p>&lt;自定义位置&gt;：{〔-〕&lt;空行参数&gt;│!}。{〔-〕&lt;字距&gt;│!}</p>
+<p>&lt;排版方向&gt;： {!│＝}</p>
+<p>&lt;当前页号&gt;、&lt;页号间隔&gt;：&lt;数字&gt;</p>
+<p>&lt;页码显示位数&gt;：如果页码位数小于要求的显示位数，则在前补0，它与页码注解中”页码显示位数”一样。</p>
+<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><p>&lt;页号类型&gt;：</p>
+<p>L：罗马数字；</p>
+<p>R：小写罗马数字；</p>
+<p>B：阳圈码；</p>
+<p>H：阴圈码；</p>
+<p>(：括号码；</p>
+<p>(S ：竖括号码；</p>
+<p>F：方框码；</p>
+<p>FH：阴方框码；</p>
+<p>FL：立体方框码；</p>
+<p>S：单字多位数码；</p>
+<p>．点码。</p>
+<p>Z：Z中文数字页号；</p>
+<p>Z#：小于40的中文页号采用”十廿卅”方式；缺省为外文页号。</p>
+<p>^：表示单字页号，比如和阴圈码结合，可以将页号做成一个字的宽度。缺省为多字页号。</p>
+<p>&lt;页号出现方式&gt;：</p>
+<p>0：不出现；</p>
+<p>1：只在单页出现；</p>
+<p>2：只在双页出现；</p>
+<p>3：在每页都出现；</p>
+<p>缺省为3。</p>
+<p>-n：n指定出现的次数（n&gt;0）。例如－1表示只在当前页出现一次。</p>
+<p>&lt;页号位置&gt;：</p>
+<p>！表示双页的页号的水平位置和单页的位置是水平镜像对称的；</p>
+<p>＝表示双页的页号的水平位置和单页的位置是一致的；</p>
+<p>&lt;预设位置&gt;：@&lt;数字&gt;；</p>
+<p>表示预设的几种位置，数字为一到两位数字，从1（或者01）到12，分别代表沿页面四边排列的12个位置。</p>
+<p>&lt;自定义位置&gt;：其中”!”表示居中。缺省为右下角，即”!@7”。自定义位置的指定的距离是相对于版心的左上角，即版心左上角为0。0；距离可以为正、负、零，如果页号的位置在版心之内，并不在其中挖出空地，只是简单地叠加在上面。</p>
+<p>&lt;排版方向&gt;：!表示与版心排版方向相反；＝表示与版心排版方向相同。</p>
+<p>&lt;当前页号&gt;：指定当前的页号；此参数会影响到YM注解的效果。</p>
+<p>&lt;页号间隔&gt;：指定页号的增加步长；缺省为1；此参数会影响到YM注解的效果。</p>
+<p>当不带参数而直接使用〖PN〗注解时，没有任何效果。</p>
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><p><img src="/images/fangzheng-shuban-PN-yema-20190421225457.png"></p>
+]]></content>
+      <tags>
+        <tag>方正书版</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>git status 中文显示为数字的解决办法</title>
+    <url>/2019/11/18/git-status-chinese-as-number/</url>
+    <content><![CDATA[<p>git 在某些环境下，会出现<code>中文路径</code>是<code>数字</code>的情况，例如：</p>
+<pre>
+liangxinhui@aiops:~/git_demo$ ls
+<b style='color:red'>中文.txt</b>
+liangxinhui@aiops:~/git_demo$ git status
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        <b style='color:red'>"\344\270\255\346\226\207.txt"</b>
+
+nothing added to commit but untracked files present (use "git add" to track)
+</pre>
+
+
+<p>此时，将 git 的<code>core.quotepath</code>配置项设置为<code>false</code>，即可解决：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global core.quotepath <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Github 修改hosts加速国内访问</title>
+    <url>/2019/07/31/github-dns-speed-up/</url>
+    <content><![CDATA[<p>在国内访问<code>Github</code>网站，特别是<code>git clone</code>时，非常慢。</p>
+<p>如果有梯子，会好一些。</p>
+<p>这里介绍一个不需要梯子的办法: 通过修改本地 <code>hosts</code> 文件，达到加速的目的。</p>
+<p>实测，可以明显提升下载速度（单位网络限速 10 Mbps，<code>git clone</code> 能满速 <code>900KB/s</code> 以上)。</p>
+<span id="more"></span>
+
+
+<p>打开<code>hosts</code>文件：</p>
+<ul>
+<li>Windows: <code>C:\Windows\System32\drivers\etc\hosts</code> （需要管理员权限）</li>
+<li>Linux: <code>/etc/hosts</code></li>
+</ul>
+<p>添加以下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">192.30.253.112 github.com</span><br><span class="line">192.30.253.113 github.com</span><br><span class="line">151.101.184.133 assets-cdn.github.com</span><br><span class="line">151.101.185.194 github.global.ssl.fastly.net</span><br></pre></td></tr></table></figure>
+
+<p>添加完毕之后，刷新dns缓存：</p>
+<ul>
+<li>Windows: <code>ipconfig /flushdns</code></li>
+<li>Linux: 不需要</li>
+</ul>
+<p>上边域名对应的IP地址，可通过 <a href="https://www.ipaddress.com/">www.ipaddress.com</a> 查询得到。</p>
+]]></content>
+      <tags>
+        <tag>Github</tag>
+        <tag>加速</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Jupyter Notebook 自定义 pandas 配置</title>
+    <url>/2019/06/26/jupyter-notebook-pandas-config/</url>
+    <content><![CDATA[<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>Jupyter Notebook&#x2F;Lab 中使用 pandas 输出 DataFrame时，默认的行列数可能不满足我们的要求。</p>
+<h1 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h1><h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><p>一般可以在Notebook的开始位置，执行以下命令进行设置：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line">pd.set_option(<span class="string">&#x27;display.max_rows&#x27;</span>, <span class="number">10</span>)</span><br><span class="line">pd.set_option(<span class="string">&#x27;display.max_columns&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><p>如果想让Notebook中任何地方都默认以自定义行数、列数显示，可以通过添加 IPython 的启动脚本来实现。</p>
+<p>路径为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPYTHONDIR/profile_default/startup/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>IPYTHONDIR 的路径默认为 <code>~/.ipython/</code>, 其他情况见下文</li>
+<li><code>startup</code>目录中各个文件以字母顺序先后执行</li>
+</ul>
+<p>例如，我们添加文件<code>~/.ipython/profile_default/startup/00-pandas-setting.py</code></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line">pd.set_option(<span class="string">&#x27;display.max_rows&#x27;</span>, <span class="number">10</span>)</span><br><span class="line">pd.set_option(<span class="string">&#x27;display.max_columns&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样在所有Notebook中都会以自定义的行列数对DataFrame进行展示。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://ipython.org/ipython-doc/stable/interactive/tutorial.html#startup-files">IPython Startup Files</a>:</p>
+<blockquote>
+<p><strong>Startup Files</strong><br>If you want some code to be run at the beginning of every IPython session, the easiest way is to add Python (.py) or IPython (.ipy) scripts to your profile_default&#x2F;startup&#x2F; directory. Files here will be executed as soon as the IPython shell is constructed, before any other code or scripts you have specified. The files will be run in order of their names, so you can control the ordering with prefixes, like 10-myimports.py.</p>
+</blockquote>
+<p><a href="https://ipython.org/ipython-doc/stable/config/intro.html#profiles">IPython 默认路径</a>：</p>
+<blockquote>
+<p><strong>The IPython directory</strong><br>IPython stores its files—config, command history and extensions—in the directory ~&#x2F;.ipython&#x2F; by default.</p>
+<p>IPYTHONDIR<br>If set, this environment variable should be the path to a directory, which IPython will use for user data. IPython will create it if it does not exist.</p>
+<p>–ipython-dir&#x3D;&lt;path&gt;<br>This command line option can also be used to override the default IPython directory.</p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>JupyterNotebook</tag>
+        <tag>Pandas</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>awk 按列求和【转载】</title>
+    <url>/2020/03/07/linux-awk-sum/</url>
+    <content><![CDATA[<p>在Shell中，我们可以用awk实现按列求和的功能，非常简单。看下面的例子：</p>
+<h2 id="1-简单的按列求和"><a href="#1-简单的按列求和" class="headerlink" title="1.简单的按列求和"></a>1.简单的按列求和</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[linux@<span class="built_in">test</span> /tmp]$ <span class="built_in">cat</span> <span class="built_in">test</span></span><br><span class="line">123.52</span><br><span class="line">125.54</span><br><span class="line">126.36</span><br><span class="line"></span><br><span class="line">[linux@<span class="built_in">test</span> /tmp]$ awk <span class="string">&#x27;&#123;sum += $1&#125;;END &#123;print sum&#125;&#x27;</span> <span class="built_in">test</span></span><br><span class="line">375.42</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-对符合某些条件的行，按列求和"><a href="#2-对符合某些条件的行，按列求和" class="headerlink" title="2.对符合某些条件的行，按列求和"></a>2.对符合某些条件的行，按列求和</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[linux@<span class="built_in">test</span> /tmp]$ <span class="built_in">cat</span> <span class="built_in">test</span></span><br><span class="line">aaa 123.52</span><br><span class="line">bbb 125.54</span><br><span class="line">aaa 123.52</span><br><span class="line">aaa 123.52</span><br><span class="line">ccc 126.36</span><br></pre></td></tr></table></figure>
+<p>对文件test中 第一列为aaa的行求和</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[linux@<span class="built_in">test</span> /tmp]$ awk <span class="string">&#x27;/aaa/ &#123;sum += $2&#125;;END &#123;print sum&#125;&#x27;</span> <span class="built_in">test</span></span><br><span class="line">370.56</span><br></pre></td></tr></table></figure>
+<p>awk 处理文本还是很方便的。<br>————————————————<br>版权声明：本文为CSDN博主「默一鸣」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href="https://blog.csdn.net/yimingsilence/article/details/77163585">https://blog.csdn.net/yimingsilence/article/details/77163585</a></p>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>awk</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux Shell 脚本分割CSV文件</title>
+    <url>/2020/02/26/linux-shell-split-csv/</url>
+    <content><![CDATA[<p>将以下脚本保存为 split_csv.sh</p>
+<p>然后执行 <code>split_csv.sh data.csv 100</code></p>
+<p>可以将 <code>data.csv</code> 按照每个文件 100 行数据，分割为多个小文件，命名格式为：</p>
+<pre>
+data_0000.csv
+data_0001.csv
+data_0002.csv
+data_0003.csv
+data_0004.csv
+...
+</pre>
+
+<p>脚本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># split_csv.sh data.csv 10000</span></span><br><span class="line"></span><br><span class="line">file_path=<span class="variable">$1</span></span><br><span class="line">line_number=<span class="variable">$2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># /a/b.c.d =&gt; file_name: /a/b.c file_ext: .d</span></span><br><span class="line">file_name=<span class="variable">$&#123;file_path%.*&#125;</span></span><br><span class="line">file_ext=<span class="string">&quot;.&quot;</span><span class="variable">$&#123;file_path##*.&#125;</span></span><br><span class="line"></span><br><span class="line">filter_cmd=<span class="string">&#x27;sh -c &quot;&#123; head -n1 &#x27;</span><span class="variable">$&#123;file_path&#125;</span><span class="string">&#x27;; cat; &#125; &gt; $FILE&quot;&#x27;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$filter_cmd</span></span><br><span class="line"><span class="built_in">tail</span> -n +2 <span class="variable">$file_path</span> | <span class="built_in">split</span> -d -l <span class="variable">$line_number</span>  -a 4  --additional-suffix <span class="variable">$file_ext</span> --filter=<span class="string">&quot;<span class="variable">$filter_cmd</span>&quot;</span>  -  <span class="variable">$&#123;file_name&#125;</span>_</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux Shell 编程速查表</title>
+    <url>/2019/12/26/linux-shell-cheat-sheet/</url>
+    <content><![CDATA[<p>持续更新..</p>
+<p>整理记录常用 shell 代码段。</p>
+<h1 id="基础变量"><a href="#基础变量" class="headerlink" title="基础变量"></a>基础变量</h1><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 获取当前脚本所在目录</span></span><br><span class="line">SHELL_FOLDER=$(<span class="built_in">dirname</span> $(<span class="built_in">readlink</span> -f <span class="string">&quot;<span class="variable">$0</span>&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取当前时间 20200123112233</span></span><br><span class="line">DATETIME=$(<span class="built_in">date</span> +%Y%m%d%H%M%S)</span><br><span class="line"><span class="comment"># 获取当前时间 2020-01-23 11:22:33</span></span><br><span class="line">DATETIME=$(<span class="built_in">date</span> +%Y-%m-%d %H:%M:%S)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="语法示例"><a href="#语法示例" class="headerlink" title="语法示例"></a>语法示例</h1><h2 id="逻辑判断"><a href="#逻辑判断" class="headerlink" title="逻辑判断"></a>逻辑判断</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 判断文件夹是否存在</span></span><br><span class="line"><span class="keyword">if</span> [ -d /path/to/folder ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># do somthing if the folder exists</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="comment"># 判断文件是否存在</span></span><br><span class="line"><span class="keyword">if</span> [ -f /path/to/file ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># do somthing if the file exists</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># for 循环 (需要bash执行，ubuntu 默认sh不支持此语法)</span></span><br><span class="line"><span class="keyword">for</span> ((i=0; i&lt;N;i++));</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义参数"><a href="#自定义参数" class="headerlink" title="自定义参数"></a>自定义参数</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 取第N个参数，如果不存在，设置默认值</span></span><br><span class="line">OUTPUTDIR=<span class="variable">$1</span></span><br><span class="line"><span class="keyword">if</span> [ ! <span class="variable">$OUTPUTDIR</span> ]; <span class="keyword">then</span></span><br><span class="line">  OUTPUTDIR=/var/log/top_monitor/</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="实用功能集锦"><a href="#实用功能集锦" class="headerlink" title="实用功能集锦"></a>实用功能集锦</h1><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 判断命令是否存在</span></span><br><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">is_cmd_exist</span></span>() &#123;</span><br><span class="line">    <span class="built_in">return</span> $(<span class="built_in">type</span> <span class="variable">$1</span> &amp;&gt;/dev/null)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除N分钟之前的文件, 例如：6 小时 = 360分钟</span></span><br><span class="line">find /your/path  -<span class="built_in">type</span> f -mmin +360  -delete</span><br><span class="line"></span><br><span class="line"><span class="comment"># top 导出文本格式</span></span><br><span class="line">top -b -c -n 1  &gt; /path/to/save</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>shell</tag>
+        <tag>cheatsheet</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux下快速选定当前目录的最新文件</title>
+    <url>/2015/12/16/linux_shell_last_file/</url>
+    <content><![CDATA[<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>在某些场景下，会有一个目录下有很多名字前缀一样，后边有很多文件名类似的情况。<br>例如：<br>一个存储日志的路径下可能会是这样的(有简化)：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ll </span><br><span class="line">2015-12-16 10:35:02 log_20151216103502.txt</span><br><span class="line">2015-12-16 10:35:05 log_20151216103505.txt</span><br><span class="line">2015-12-16 10:35:09 log_20151216103509.txt</span><br><span class="line">2015-12-16 10:35:11 log_20151216103511.txt</span><br></pre></td></tr></table></figure>
+<p>有很多前缀一致的文件，尾部以时间戳区分，这些文件名<strong>只是最后两位不一样</strong>。</p>
+<hr>
+<p>假设我们想查看最新的一个文件<code>log_20151216103511.txt</code>的内容,如果直接用：<br><code>cat log_</code> + <code>TAB</code>,系统会帮我们补为：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> log_201512161035</span><br><span class="line">log_20151216103502.txt  log_20151216103505.txt  log_20151216103509.txt  log_20151216103511.txt </span><br></pre></td></tr></table></figure>
+<p><strong>最后两位需要自己补全</strong>。</p>
+<span id="more"></span>
+<hr>
+<h1 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h1><p>这里，提供一种方法，对这一步骤进行简化。<br>##效果<br>输入<code>lastfile</code>命令，即可显示最新文件的文件名：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="variable">$lastfile</span> log_</span><br><span class="line">log_20151216103511.txt</span><br></pre></td></tr></table></figure>
+<p>配合<code>cat</code>,查看文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="variable">$cat</span> `lastfile log_`  </span><br><span class="line">This is the content of log_20151216103511.txt</span><br></pre></td></tr></table></figure>
+
+<h2 id="实现方法"><a href="#实现方法" class="headerlink" title="实现方法"></a>实现方法</h2><p>1.编写shell脚本文件<code>lastfile</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">ls</span> -t | grep <span class="string">&quot;<span class="variable">$1</span>&quot;</span> | <span class="built_in">head</span> -n 1</span><br></pre></td></tr></table></figure>
+<p>2.将<code>lastfile</code>添加可执行权限，并放入系统path（例如<code>/usr/local/bin</code>).</p>
+<h2 id="脚本解析"><a href="#脚本解析" class="headerlink" title="脚本解析"></a>脚本解析</h2><p><code>ls -t | grep &quot;$1&quot; | head -n 1</code>  分一下三个步骤：</p>
+<ul>
+<li><code>ls -t</code>:<br>按时间排序，最新的文件在第一个。</li>
+<li><code>grep &quot;$1&quot;</code> :<br>过滤输入的字符串，例如本例中为<code>log_</code>.如果不输入的话，默认为空，表示所有文件。</li>
+<li><code>head -n 1</code>:<br>返回所有符合规则的文件中的第一条（即最新）。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>scripts</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>matplotlib 绘制多图时合并部分区域</title>
+    <url>/2020/02/13/matplotlib-merge-axes/</url>
+    <content><![CDATA[<p>matplotlib 中 subplots 时，合并多个子图， 实现类似 Excel中 “合并单元格”的功能。</p>
+<p>例如：创建一个 3 行 2 列的 figure，将最后一行合并</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个 3 行 2 列的 figure，将最后一行合并</span></span><br><span class="line">fig, axes = plt.subplots(<span class="number">3</span>, <span class="number">2</span>, constrained_layout=<span class="literal">True</span>)</span><br><span class="line"><span class="comment"># 删除画布中要合并位置的子图</span></span><br><span class="line"><span class="keyword">for</span> ax <span class="keyword">in</span> axes[-<span class="number">1</span>, :]:</span><br><span class="line">    ax.remove()</span><br><span class="line">axes = axes[:-<span class="number">1</span>]</span><br><span class="line"><span class="comment"># 添加大的子图，覆盖整行</span></span><br><span class="line">gs = axes[<span class="number">0</span>,<span class="number">0</span>].get_gridspec()</span><br><span class="line">axbig = fig.add_subplot(gs[-<span class="number">1</span>, :])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加说明文字</span></span><br><span class="line">axes = axes.reshape(-<span class="number">1</span>) </span><br><span class="line"><span class="keyword">for</span> idx,ax <span class="keyword">in</span> <span class="built_in">enumerate</span>(axes):</span><br><span class="line">    ax.text(<span class="number">0.5</span>, <span class="number">0.5</span>, <span class="string">&quot;ax%d&quot;</span> % (idx), va=<span class="string">&quot;center&quot;</span>, ha=<span class="string">&quot;center&quot;</span>)</span><br><span class="line">axbig.text(<span class="number">0.5</span>, <span class="number">0.5</span>, <span class="string">&quot;ax big&quot;</span>, va=<span class="string">&quot;center&quot;</span>, ha=<span class="string">&quot;center&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>效果:</p>
+<p><img src="/images/matplotlib-merge-axes.png"></p>
+]]></content>
+      <tags>
+        <tag>数据可视化</tag>
+        <tag>Python</tag>
+        <tag>matplotlib</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Pandas 一次 Apply 返回多列结果的方法</title>
+    <url>/2019/08/02/pandas-apply-multiple-columns-as-result/</url>
+    <content><![CDATA[<p><code>pandas.DataFrame</code> 中的 <code>apply</code> 方法可以用于生成新的数据。</p>
+<h1 id="基础方法（1对1，N对1）"><a href="#基础方法（1对1，N对1）" class="headerlink" title="基础方法（1对1，N对1）"></a>基础方法（1对1，N对1）</h1><p><strong>1列输入-1列输出 最简单：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>(<span class="params">x</span>):</span><br><span class="line">    y = x + <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> y</span><br><span class="line">    </span><br><span class="line">df[<span class="string">&#x27;new_column&#x27;</span>] = df[<span class="string">&#x27;column_1&#x27;</span>].apply(foo)</span><br></pre></td></tr></table></figure>
+
+<p><strong>N列输入-1列输出:</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">foo_multiple_input</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">if</span> x[<span class="string">&#x27;column_1&#x27;</span>] &gt; <span class="number">0</span>:</span><br><span class="line">        y = x[<span class="string">&#x27;column_2&#x27;</span>] + x[<span class="string">&#x27;column_3&#x27;</span>]</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        y = x[<span class="string">&#x27;column_4&#x27;</span>] * x[<span class="string">&#x27;column_5&#x27;</span>]</span><br><span class="line">    <span class="keyword">return</span> y</span><br><span class="line"></span><br><span class="line">df[<span class="string">&#x27;new_column&#x27;</span>] = df.apply(foo_multiple_input,axis=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="复杂场景（1对N）"><a href="#复杂场景（1对N）" class="headerlink" title="复杂场景（1对N）"></a>复杂场景（1对N）</h1><p><strong>1列输入-N列输出，N对N的处理方法类似:</strong></p>
+<span id="more"></span>
+
+<p>这里给出 <a href="https://stackoverflow.com/questions/23586510/return-multiple-columns-from-apply-pandas">StackOverflow上相关问答</a></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>有人提出这么一个问题：</p>
+<blockquote>
+<p>想把<code>size</code>一列转换为<code>KB</code>&#x2F;<code>MB</code>&#x2F;<code>GB</code> 3列。<br>他自己的实现方式为，执行3次<code>1列输入-1列输出</code>的操作。<br>想知道有没有更好的实现方式。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">df_test = pd.DataFrame([</span><br><span class="line">    &#123;<span class="string">&#x27;dir&#x27;</span>: <span class="string">&#x27;/Users/uname1&#x27;</span>, <span class="string">&#x27;size&#x27;</span>: <span class="number">994933</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&#x27;dir&#x27;</span>: <span class="string">&#x27;/Users/uname2&#x27;</span>, <span class="string">&#x27;size&#x27;</span>: <span class="number">109338711</span>&#125;,</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">df_test[<span class="string">&#x27;size_kb&#x27;</span>] = df_test[<span class="string">&#x27;size&#x27;</span>].astype(<span class="built_in">int</span>).apply(<span class="keyword">lambda</span> x: locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, x / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; KB&#x27;</span>)</span><br><span class="line">df_test[<span class="string">&#x27;size_mb&#x27;</span>] = df_test[<span class="string">&#x27;size&#x27;</span>].astype(<span class="built_in">int</span>).apply(<span class="keyword">lambda</span> x: locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, x / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; MB&#x27;</span>)</span><br><span class="line">df_test[<span class="string">&#x27;size_gb&#x27;</span>] = df_test[<span class="string">&#x27;size&#x27;</span>].astype(<span class="built_in">int</span>).apply(<span class="keyword">lambda</span> x: locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, x / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; GB&#x27;</span>)</span><br><span class="line"></span><br><span class="line">df_test</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">             <span class="built_in">dir</span>       size       size_kb   size_mb size_gb</span><br><span class="line"><span class="number">0</span>  /Users/uname1     <span class="number">994933</span>      <span class="number">971.6</span> KB    <span class="number">0.9</span> MB  <span class="number">0.0</span> GB</span><br><span class="line"><span class="number">1</span>  /Users/uname2  <span class="number">109338711</span>  <span class="number">106</span>,<span class="number">776.1</span> KB  <span class="number">104.3</span> MB  <span class="number">0.1</span> GB</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>该原始方案，我们暂且记做<code>one-by-one</code>。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>有两个大神给出了两种方案：</p>
+<p><strong>方案1：返回Series</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sizes_series</span>(<span class="params">s</span>):</span><br><span class="line">    s[<span class="string">&#x27;size_kb&#x27;</span>] = locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s[<span class="string">&#x27;size&#x27;</span>] / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; KB&#x27;</span></span><br><span class="line">    s[<span class="string">&#x27;size_mb&#x27;</span>] = locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s[<span class="string">&#x27;size&#x27;</span>] / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; MB&#x27;</span></span><br><span class="line">    s[<span class="string">&#x27;size_gb&#x27;</span>] = locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s[<span class="string">&#x27;size&#x27;</span>] / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; GB&#x27;</span></span><br><span class="line">    <span class="keyword">return</span> s    </span><br><span class="line"></span><br><span class="line">df_test = df_test.apply(sizes_serias, axis=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>该方案的原理为：</p>
+<ul>
+<li>对每一行记录返回1个 <code>Series</code>,这个<code>Series</code>包含原始的所有列</li>
+<li>汇总的结果还是整个<code>Dataframe</code>且包含新增列</li>
+</ul>
+<p><strong>方案2：使用tuple</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sizes</span>(<span class="params">s</span>):    </span><br><span class="line">    <span class="keyword">return</span> locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s / <span class="number">1024.0</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; KB&#x27;</span>, \</span><br><span class="line">        locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s / <span class="number">1024.0</span> ** <span class="number">2</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; MB&#x27;</span>, \</span><br><span class="line">        locale.<span class="built_in">format</span>(<span class="string">&quot;%.1f&quot;</span>, s / <span class="number">1024.0</span> ** <span class="number">3</span>, grouping=<span class="literal">True</span>) + <span class="string">&#x27; GB&#x27;</span></span><br><span class="line"></span><br><span class="line">df_test[<span class="string">&#x27;size_kb&#x27;</span>],  df_test[<span class="string">&#x27;size_mb&#x27;</span>], df_test[<span class="string">&#x27;size_gb&#x27;</span>] = <span class="built_in">zip</span>(*df_test[<span class="string">&#x27;size&#x27;</span>].apply(sizes))</span><br></pre></td></tr></table></figure>
+
+<p>这里解释一下tuple方案的原理：</p>
+<ul>
+<li>先使用<code>apply</code>对每一<code>行</code>返回一个<code>tuple</code>，apply的结果为 m*3 的 <code>array</code> （m为行数）</li>
+<li>再使用<code>zip(*array)</code>将数据转为 3 个 <code>list</code> 组成的 <code>tuple</code></li>
+<li>用3个<code>DataFrame[column]</code>分别接收各个结果</li>
+</ul>
+<p><strong>补充一下zip的用法说明</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">b = [<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>]</span><br><span class="line"></span><br><span class="line">ziped_data = <span class="built_in">list</span>(<span class="built_in">zip</span>(a,b))</span><br><span class="line"><span class="built_in">print</span>(ziped_data) <span class="comment"># [(1, &#x27;a&#x27;), (2, &#x27;b&#x27;), (3, &#x27;c&#x27;)]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># unzip</span></span><br><span class="line">unziped_data = <span class="built_in">list</span>(<span class="built_in">zip</span>(*ziped_data))</span><br><span class="line"><span class="built_in">print</span>(unziped_data) <span class="comment"># [(1, 2, 3), (&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;)]</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="效率对比"><a href="#效率对比" class="headerlink" title="效率对比"></a>效率对比</h2><p>从运行时间看：</p>
+<ul>
+<li><code>tuple</code> 方案运行效率最高，但可读性相对较差</li>
+<li>原始的<code>one-by-one</code>方案，效率可接受。特别是在数据量大的情况下，与<code>tuple</code>差异不明显。</li>
+<li><code>series</code>方案，运行效率明显较低。不推荐。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 2 行数据</span></span><br><span class="line"><span class="comment">##  one-by-one apply</span></span><br><span class="line">2.32 ms ± 121 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span><br><span class="line"><span class="comment">## series</span></span><br><span class="line">16.9 ms ± 75.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span><br><span class="line"><span class="comment">##  zip</span></span><br><span class="line">1.29 ms ± 21 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 10000 行数据</span></span><br><span class="line"><span class="comment">##  one-by-one apply</span></span><br><span class="line">580 ms ± 13.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br><span class="line"><span class="comment">## series</span></span><br><span class="line">4.32 s ± 29.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br><span class="line"><span class="comment">##  zip</span></span><br><span class="line">565 ms ± 7.29 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><ul>
+<li>如果新生成列数不是很多，且逐列生成过程中没有重复计算的情况下，建议使用可读性更高的<code>one-by-one</code>方案。</li>
+<li>其他场景，推荐使用 <code>tuple + (un)zip</code> 的方案，效率更高。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>Pandas</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python脚本打包成exe程序总结</title>
+    <url>/2015/11/04/pack_python_to_exe/</url>
+    <content><![CDATA[<h1 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h1><p> 一些小工具用Python写起来很方便，但是当转给其他朋友用的时候，如果对方没有Python环境，为了使用脚本还得专门安装Python环境就显得比较麻烦了。<br>当然，这个情况在Linux或Mac下是不会有的，因为Python环境在主流的Linux发行版或Mac中已经内置了。<br> 因此，就有了将Python打包成Windows下的exe程序的需求。<br> <span id="more"></span></p>
+<hr>
+<h1 id="可选工具"><a href="#可选工具" class="headerlink" title="可选工具"></a>可选工具</h1><p>幸运的是，已经有很多前辈创造了一些方便的工具：</p>
+<ul>
+<li><a href="http://www.pyinstaller.org/">pyinstaller</a></li>
+<li><a href="http://www.py2exe.org/">py2exe</a></li>
+<li><a href="http://cx-freeze.sourceforge.net/">cx_Freeze</a>（未测试）</li>
+</ul>
+<hr>
+<h1 id="优秀整理贴"><a href="#优秀整理贴" class="headerlink" title="优秀整理贴"></a>优秀整理贴</h1><h2 id="py2exe"><a href="#py2exe" class="headerlink" title="py2exe:"></a>py2exe:</h2><p><a href="http://www.cnblogs.com/TsengYuen/archive/2012/04/12/2444177.html">python直接生成exe的方法（使用py2exe）</a></p>
+<h2 id="pyinstaller"><a href="#pyinstaller" class="headerlink" title="pyinstaller:"></a>pyinstaller:</h2><p><a href="http://www.crifan.com/use_pyinstaller_to_package_python_to_single_executable_exe/">【记录】用PyInstaller把Python代码打包成单个独立的exe可执行文件</a></p>
+<h2 id="cx-Freeze"><a href="#cx-Freeze" class="headerlink" title="cx_Freeze"></a>cx_Freeze</h2><p><a href="http://keliang.blog.51cto.com/3359430/661884">利用cx_Freeze将py文件打包成exe文件（图文全解）</a></p>
+<hr>
+<h1 id="使用感受"><a href="#使用感受" class="headerlink" title="使用感受"></a>使用感受</h1><h2 id="pyinstaller-1"><a href="#pyinstaller-1" class="headerlink" title="pyinstaller"></a>pyinstaller</h2><p>简单易用：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#生成单个exe文件</span></span><br><span class="line">pyinstaller -F test.py</span><br><span class="line"><span class="comment">#生成 带图标的exe 文件</span></span><br><span class="line">pyinstaller -F -i test.ico test.py</span><br></pre></td></tr></table></figure>
+<p>不管test.py依赖多少库，只需要简单的一条命令即可完成。<br>更高级用法，请参考其他文章。</p>
+<h2 id="py2exe-1"><a href="#py2exe-1" class="headerlink" title="py2exe"></a>py2exe</h2><p>相比pyinstaller，稍微麻烦一些：</p>
+<ul>
+<li>需要再写一个简单的python脚本</li>
+<li>依赖的文件也需要详细指定</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>编译出来的程序目前还没有发现manifest相关的问题。</li>
+</ul>
+<h2 id="cx-Freeze-1"><a href="#cx-Freeze-1" class="headerlink" title="cx_Freeze"></a>cx_Freeze</h2><p>暂时还没体验，等用过再说吧。</p>
+<h1 id="你可能遇到的问题"><a href="#你可能遇到的问题" class="headerlink" title="你可能遇到的问题"></a>你可能遇到的问题</h1><p>在使用 <code>pyinstaller</code>时，你可能会遇到以下问题：</p>
+<h2 id="问题1：ntpath-py-UnicodeDecodeError"><a href="#问题1：ntpath-py-UnicodeDecodeError" class="headerlink" title="问题1：ntpath.py UnicodeDecodeError"></a>问题1：ntpath.py UnicodeDecodeError</h2><p>【现象】<br>安装时出现类似这种情况：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">File <span class="string">&quot;C:\Python27\lib\ctypes\util.py&quot;</span>, line 54, <span class="keyword">in</span> find_library</span><br><span class="line">    fname = os.path.join(directory, name)</span><br><span class="line">File <span class="string">&quot;C:\Python27\lib\ntpath.py&quot;</span>, line 108, <span class="keyword">in</span> <span class="built_in">join</span></span><br><span class="line">    path += <span class="string">&quot;\\&quot;</span> + b</span><br><span class="line">UnicodeDecodeError: <span class="string">&#x27;ascii&#x27;</span> codec can<span class="string">&#x27;t decode byte 0xc1 in position 9: ordinal not in range(128)</span></span><br></pre></td></tr></table></figure>
+
+<p>【原因】<br>安装过程需要访问用户文件夹:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">5490 INFO: Updating manifest <span class="keyword">in</span> C:\Users\梁鑫辉\AppData\Roaming\pyinstaller\bincache00_py27_32bit\python27.dll</span><br></pre></td></tr></table></figure>
+<p>如果用户名是中文，不识别。</p>
+<p>【解决办法】<br>修改<code>ntpath.py</code>,将<code>import sys</code>改为：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line">reload(sys)</span><br><span class="line">sys.setdefaultencoding(<span class="string">&quot;gbk&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="问题2：manifest-could-not-be-extracted"><a href="#问题2：manifest-could-not-be-extracted" class="headerlink" title="问题2：manifest could not be extracted"></a>问题2：manifest could not be extracted</h2><p>【现象】<br>程序运行时出现这个错误：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">manifest could not be extracted</span><br></pre></td></tr></table></figure>
+
+<p>【原因】<br>不明。<br>猜测可能跟我自己的环境有关，换个电脑没发现问题。<br>可能的原因：</p>
+<ul>
+<li><code>Windows10</code></li>
+<li>同时安装有<code>VS2012</code>和<code>VS2015</code></li>
+<li>中文用户名</li>
+</ul>
+<p>【解决办法】<br>暂无，如果你有，请告诉我(<a href="mailto:&#108;&#105;&#97;&#110;&#103;&#x78;&#x69;&#110;&#x68;&#x75;&#x69;&#64;&#x71;&#113;&#46;&#99;&#111;&#x6d;">&#108;&#105;&#97;&#110;&#103;&#x78;&#x69;&#110;&#x68;&#x75;&#x69;&#64;&#x71;&#113;&#46;&#99;&#111;&#x6d;</a>)，谢谢！</p>
+<hr>
+<h1 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h1><p>对于pyinstaller和py2exe的使用建议：<br>如果没有manifest相关考虑时，建议使用<code>pyinstaller</code>，你会发现：</p>
+<blockquote>
+<p>用pyinstaller生成一个exe是多么简单的一件事</p>
+</blockquote>
+<p>如果生成的exe遇到类似这样的问题:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">microsoft.vc90.crt.manifest could not be extracted!</span><br></pre></td></tr></table></figure>
+<p>搜索N久无果，请尝试<code>py2exe</code>。</p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>打包</tag>
+        <tag>exe</tag>
+        <tag>pyinstaller</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>nohup python 日志不能输出的问题</title>
+    <url>/2020/07/01/nohup-python-output-empty/</url>
+    <content><![CDATA[<p>在执行 <code>nohup python my_script.py &amp;</code> 时，生成的 <code>nohup.out</code> 文件为空。</p>
+<p>原因是：<strong>stdout 没有及时 flush</strong></p>
+<p>解决办法：<strong>添加<code>python</code>启动参数<code>-u</code>。</strong></p>
+<p>参数说明：</p>
+<pre>
+# python --help
+...
+-u     : force the binary I/O layers of stdout and stderr to be unbuffered;
+         stdin is always buffered; text I/O layer will be line-buffered;
+         also PYTHONUNBUFFERED=x
+...
+</pre>
+
+<p>参考链接：<br><a href="https://stackoverflow.com/questions/25674613/python-nohup-out-dont-show-print-statement">https://stackoverflow.com/questions/25674613/python-nohup-out-dont-show-print-statement</a></p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 pigz 并行加速 Linux 压缩与解压</title>
+    <url>/2019/11/13/pigz/</url>
+    <content><![CDATA[<p>Linux下压缩或解压一个文件，通常使用<code>tar.gz</code>格式，对应的工具为 <code>tar</code>(打包工具)以及由<code>-z</code>参数指定的<code>gzip</code>（压缩解压工具）。</p>
+<p>而默认的<code>gzip</code>工具是单线程工作的，在处理大文件时非常慢。</p>
+<p>可以通过<code>-I</code>参数指定自定义的<code>并行（多进程、多核）</code>压缩解压工具 <code>pigz</code> 来进行加速。</p>
+<p><code>pigz</code>的<a href="https://zlib.net/pigz/">官方</a>自我介绍：</p>
+<blockquote>
+<p>A parallel implementation of gzip for modern multi-processor, multi-core machines</p>
+</blockquote>
+<h1 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h1><ul>
+<li>安装 <code>pigz</code> 工具包（yum 或 apt)</li>
+<li>将常规参数中的<code>-z</code>去掉，换上<code>-I</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 压缩</span></span><br><span class="line">tar -I pigz -cvf package.tar.gz /path/to/file_or_folder</span><br><span class="line"><span class="comment"># 解压 (中括号内为可选，用于指定解压缩目标地址)</span></span><br><span class="line">tar -I pigz -xvf package.tar.gz [-C  /path/to/extracted]</span><br></pre></td></tr></table></figure>
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>常规的<code>tar</code>方法中<code>czvf</code>或<code>xzvf</code>中前边的<code>-</code>可省了，且<code>fv</code>或<code>vf</code>顺序可调整</li>
+<li>此处因为要加入<code>-I</code>参数，不能省略<code>-</code>，且<code>vf</code>参数只能是<code>f</code>在后（<code>f</code>紧挨指定的压缩文件路径)</li>
+</ul>
+<h1 id="原理解析"><a href="#原理解析" class="headerlink" title="原理解析"></a>原理解析</h1><span id="more"></span>
+<p>tar 通常的用法为：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 压缩</span></span><br><span class="line">tar -czvf package.tar.gz /path/to/file_or_folder</span><br><span class="line"><span class="comment"># 解压 (中括号内为可选，用于指定解压缩目标地址)</span></span><br><span class="line">tar -xzvf package.tar.gz [-C  /path/to/extracted]</span><br></pre></td></tr></table></figure>
+
+<p>我们来看一下<code>tar --help</code>返回的帮助信息中这几个参数的含义：</p>
+<pre>
+  -c, --create                     create a new archive
+  -x, --extract, --get             extract files from an archive
+  -z, --gzip, --gunzip, --ungzip   filter the archive through gzip
+  -f, --file=ARCHIVE               use archive file or device ARCHIVE
+  -C, --directory=DIR              change to directory DIR
+  -v, --verbose                    verbosely list files processed
+</pre>
+
+<p>以及另外一个我们今天使用的参数：</p>
+<pre>
+  -I, --use-compress-program=PROG  filter through PROG (must accept -d)
+</pre>
+
+<p>通过以上信息，我们可以知道：</p>
+<ul>
+<li><code>-z</code> 的意思是使用 gzip 进行压缩或解压</li>
+<li><code>-I</code> 可以自定义你使用的压缩解压工具</li>
+</ul>
+<h1 id="相关信息"><a href="#相关信息" class="headerlink" title="相关信息"></a>相关信息</h1><p>网上也有其他一些方案，例如管道组合之类的,不太好记。这里推荐<code>-I</code>参数的方法。</p>
+<p>其他用法及对应的性能测试的效果，参考：</p>
+<ul>
+<li><a href="https://unix.stackexchange.com/questions/198958/unpigz-and-untar-to-a-specific-directory">unpigz-and-untar-to-a-specific-directory</a></li>
+<li><a href="https://www.jianshu.com/p/4e69716804a5">Linux并行gzip压缩工具pigz-冰封飞飞</a></li>
+<li><a href="https://www.jianshu.com/p/7d956a21f0ab">tar 使用pigz多线程打包-明天的明abc</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>pigz</tag>
+        <tag>效率</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>静态库嵌套链接</title>
+    <url>/2016/07/13/nested_static_library/</url>
+    <content><![CDATA[<p>Windows 和 Linux 两个平台下的实现。</p>
+<span id="more"></span>
+<h1 id="Windows（visual-studio）"><a href="#Windows（visual-studio）" class="headerlink" title="Windows（visual studio）"></a>Windows（visual studio）</h1><h3 id="项目文件"><a href="#项目文件" class="headerlink" title="项目文件"></a>项目文件</h3><ul>
+<li>BaseLibrary.lib</li>
+<li>MyLibrary.lib</li>
+<li>MyApp.exe</li>
+</ul>
+<h3 id="依赖关系"><a href="#依赖关系" class="headerlink" title="依赖关系"></a>依赖关系</h3><ul>
+<li>MyApp.exe 依赖 MyLibrary.lib </li>
+<li>MyLibrary.lib 依赖 BaseLibrary.lib</li>
+</ul>
+<h3 id="MyLibrary-lib项目配置"><a href="#MyLibrary-lib项目配置" class="headerlink" title="MyLibrary.lib项目配置"></a>MyLibrary.lib项目配置</h3><p>库管理器&gt;常规：</p>
+<ul>
+<li>附加依赖项：添加需要依赖的库文件BaseLibrary.lib</li>
+<li>链接库依赖项：是</li>
+</ul>
+<p><img src="/images/mylibrary.png" alt="mylibrary"></p>
+<h3 id="MyApp-exe项目配置"><a href="#MyApp-exe项目配置" class="headerlink" title="MyApp.exe项目配置"></a>MyApp.exe项目配置</h3><p>只需要链接MyLibrary.lib即可。</p>
+<h3 id="特殊情况"><a href="#特殊情况" class="headerlink" title="特殊情况"></a>特殊情况</h3><p>如果Base.lib是<code>boost</code>:</p>
+<ul>
+<li>需要把<code>boost</code>的自动链接库的功能关掉（使用预处理： <code>BOOST_ALL_NO_LIB</code>）</li>
+<li>然后参考上边的MyLibrary.lib配置，手工添加。</li>
+</ul>
+<p>否则，在MyApp.exe进行Link时，会提示找不到boost库的问题。</p>
+<h1 id="Linux-gcc"><a href="#Linux-gcc" class="headerlink" title="Linux (gcc)"></a>Linux (gcc)</h1><p>项目文件：</p>
+<ul>
+<li>libBaseLibrary.a</li>
+<li>libMyLibrary.a</li>
+<li>MyApp</li>
+</ul>
+<h3 id="依赖关系-1"><a href="#依赖关系-1" class="headerlink" title="依赖关系"></a>依赖关系</h3><ul>
+<li>MyApp 依赖 libMyLibrary.a </li>
+<li>libMyLibrary.a 依赖 libBaseLibrary.a</li>
+</ul>
+<h3 id="操作方法"><a href="#操作方法" class="headerlink" title="操作方法"></a>操作方法</h3><p>Linux下的.a比较简单，就是简单的把.o文件打包。</p>
+<p>因此，直接将.a解压，然后重新打包即可:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 将.a解压为一堆.o文件</span></span><br><span class="line">ar -x libBaseLibrary.a</span><br><span class="line">ar -x libMyLibrary.a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 备份或删除原libMyLibrary.a</span></span><br><span class="line"><span class="built_in">mv</span> libMyLibrary.a libMyLibrary.a.bak</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新打包为.a文件</span></span><br><span class="line">ar -r libMyLibrary.a   *.o</span><br></pre></td></tr></table></figure>
+
+<p>MyApp编译时，只需要链接合并后的libMyLibrary.a即可。</p>
+<hr>
+<p>参考链接：<br>0. <a href="http://stackoverflow.com/questions/4736877/how-to-link-boost-in-a-dependant-static-library">How to link Boost in a dependant static library</a><br>0. <a href="http://blog.csdn.net/vah101/article/details/41083327">linux 静态库嵌套包含多个.a文件的解决方法</a></p>
+]]></content>
+      <tags>
+        <tag>IDE</tag>
+        <tag>开发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux下准备Node.js环境（Linux Binaries版）</title>
+    <url>/2015/11/05/prepare_node_environment/</url>
+    <content><![CDATA[<p>在Node.js的<a href="https://nodejs.org/en/download/">官方下载网站</a>上，有<code>Linux Binaries(.tar.gz)</code>的包可供下载，但是却没有说明文档。<br>这里整理了<code>Linux Binaries(.tar.gz)</code>的一份安装说明。</p>
+<span id="more"></span>
+<p>以<code>Ubuntu</code>为例，其他Linux环境类似：</p>
+<h1 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h1><ul>
+<li>可运行Node.js</li>
+<li>针对国内网络环境，添加<a href="http://npm.taobao.org/">淘宝cnpm</a>的支持</li>
+<li>添加<a href="">nodemon</a>，以便调整代码后自动重启</li>
+<li>添加开机自启动</li>
+</ul>
+<h1 id="基本环境部署"><a href="#基本环境部署" class="headerlink" title="基本环境部署"></a>基本环境部署</h1><h2 id="获取并解压Node-js二进制文件包"><a href="#获取并解压Node-js二进制文件包" class="headerlink" title="获取并解压Node.js二进制文件包"></a>获取并解压Node.js二进制文件包</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 进入安装包目标路径,根据个人喜好放置</span></span><br><span class="line"><span class="built_in">cd</span> /home/software</span><br><span class="line"><span class="comment"># 获取安装包</span></span><br><span class="line">wget https://nodejs.org/dist/v4.2.2/node-v4.2.2-linux-x64.tar.gz</span><br><span class="line"><span class="comment"># 解压</span></span><br><span class="line">tar xvzf node-v4.2.2-linux-x64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="设置环境变量"><a href="#设置环境变量" class="headerlink" title="设置环境变量"></a>设置环境变量</h2><p>这样，并不能在系统任意位置执行<code>node</code>或者<code>npm</code>.<br>需要将路径添加到<code>PATH</code>中。<br>编辑<code>/etc/profile</code>，修改<code>PATH</code>环境变量：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/home/software/node-v4.2.2-linux-x64/bin</span><br></pre></td></tr></table></figure>
+<p>这样，除了<code>node</code>主程序和自带的<code>npm</code>，每次通过<code>npm -g</code>安装的包，一般都能用非sudo访问了。</p>
+<p>添加sudo对npm的访问：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/npm /usr/local/bin/</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装cnpm"><a href="#安装cnpm" class="headerlink" title="安装cnpm"></a>安装cnpm</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/npm /usr/local/bin/</span><br></pre></td></tr></table></figure>
+<p>之后就可以用cnpm代替npm进行包管理了，速度会快很多。</p>
+<h2 id="安装nodemon"><a href="#安装nodemon" class="headerlink" title="安装nodemon"></a>安装nodemon</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo cnpm install -g nodemon</span><br></pre></td></tr></table></figure>
+<p>由于已经设置过环境变量，此时可以直接运行<code>nodemon</code>了。</p>
+<h1 id="自启动相关"><a href="#自启动相关" class="headerlink" title="自启动相关"></a>自启动相关</h1><p>一般会把自启动命令添加到<code>/etc/rc.local</code>中，这样，系统重启时就会运行。<br>但是之前在<code>/etc/profile</code>中设置的环境变量，在<code>/etc/rc.local</code>中并不起作用。<br>我的做法是，在<code>/usr/local/bin</code>中添加<code>node</code>、<code>nodemon</code>这些程序的<code>软链接</code>:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/node /usr/local/bin/</span><br><span class="line">sudo <span class="built_in">ln</span> -s /home/software/node-v4.2.2-linux-x64/bin/nodemon /usr/local/bin/</span><br></pre></td></tr></table></figure>
+<p>然后，在<code>/etc/rc.local</code>中便可以设置开机自启动了：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 进入要启动程序的目录</span></span><br><span class="line"><span class="built_in">cd</span> /home/ubuntu/workspace/test</span><br><span class="line"><span class="comment"># 获取当前日期，格式为:20151105</span></span><br><span class="line">DATE=$(<span class="built_in">date</span> +%Y%m%d)</span><br><span class="line"><span class="comment"># 启动程序，并将日志计入当天日期的文件：log_20151105.txt</span></span><br><span class="line">sudo nodemon app.js &gt;&gt; log_<span class="variable">$&#123;DATE&#125;</span>.txt &amp;</span><br><span class="line"><span class="comment"># 恢复执行目录</span></span><br><span class="line"><span class="built_in">cd</span> -</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>安装</tag>
+        <tag>node</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python 判断dict中指定key是否存在的推荐方法</title>
+    <url>/2019/12/03/python-check-if-a-given-key-already-exists-in-a-dictionary/</url>
+    <content><![CDATA[<p>判断python的dict是否包含某个key是一个常见操作。</p>
+<p>一般有两种方案：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 方案A（推荐）</span></span><br><span class="line">key <span class="keyword">in</span> dummy_dict</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方案B</span></span><br><span class="line">key <span class="keyword">in</span> dummy_dict.keys()</span><br></pre></td></tr></table></figure>
+
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>这里通过对比测试，结论为：</p>
+<ul>
+<li>单纯检查key是否存在：<strong>不使用 .keys() 效率更高</strong></li>
+<li>如果需要检查并取出value，可考虑使用 <code>dict.get</code> 方法</li>
+</ul>
+<h1 id="详细对比测试结果"><a href="#详细对比测试结果" class="headerlink" title="详细对比测试结果"></a>详细对比测试结果</h1><span id="more"></span>
+
+
+<p>通过 jupyter notebook 中的 <code>%%timeit</code> 进行测试。</p>
+<p>结果为：</p>
+<table>
+<thead>
+<tr>
+<th>key类型</th>
+<th>key是否存在</th>
+<th>方法</th>
+<th>耗时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int</td>
+<td>yes</td>
+<td>no .keys()</td>
+<td>58.1ns</td>
+</tr>
+<tr>
+<td>int</td>
+<td>yes</td>
+<td>.keys()</td>
+<td>137ns</td>
+</tr>
+<tr>
+<td>int</td>
+<td>no</td>
+<td>no .keys()</td>
+<td>56.3ns</td>
+</tr>
+<tr>
+<td>int</td>
+<td>no</td>
+<td>keys()</td>
+<td>137ns</td>
+</tr>
+<tr>
+<td>string</td>
+<td>yes</td>
+<td>no .keys()</td>
+<td>68.6ns</td>
+</tr>
+<tr>
+<td>string</td>
+<td>yes</td>
+<td>.keys()</td>
+<td>138ns</td>
+</tr>
+<tr>
+<td>string</td>
+<td>no</td>
+<td>no .keys()</td>
+<td>57.3ns</td>
+</tr>
+<tr>
+<td>string</td>
+<td>no</td>
+<td>keys()</td>
+<td>135ns</td>
+</tr>
+</tbody></table>
+<p>结论：</p>
+<ul>
+<li>无论哪种key类型，<strong>不使用 .keys() 效率更高</strong></li>
+<li>无论key是否存在，<strong>不使用 .keys() 效率更高</strong></li>
+</ul>
+<p>详细记录如下：</p>
+<h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 分别构建键类型为 int 和 str 的 dict</span></span><br><span class="line">dummy_int_key_dict = &#123;k:<span class="built_in">str</span>(k) <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>)&#125;</span><br><span class="line">dummy_string_key_dict = &#123;<span class="built_in">str</span>(k):<span class="built_in">str</span>(k) <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>)&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试结果明细"><a href="#测试结果明细" class="headerlink" title="测试结果明细"></a>测试结果明细</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">%%timeit</span><br><span class="line"><span class="number">0</span> <span class="keyword">in</span> dummy_int_key_dict</span><br><span class="line"><span class="comment"># output： 58.1 ns ± 0.0398 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="number">0</span> <span class="keyword">in</span> dummy_int_key_dict.keys()</span><br><span class="line"><span class="comment"># output： 137 ns ± 0.938 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="number">9999</span> <span class="keyword">in</span> dummy_int_key_dict</span><br><span class="line"><span class="comment"># output： 56.3 ns ± 0.114 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="number">9999</span> <span class="keyword">in</span> dummy_int_key_dict.keys()</span><br><span class="line"><span class="comment"># output： 137 ns ± 1.94 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="string">&#x27;0&#x27;</span> <span class="keyword">in</span> dummy_string_key_dict</span><br><span class="line"><span class="comment"># output： 68.6 ns ± 0.845 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="string">&#x27;0&#x27;</span> <span class="keyword">in</span> dummy_string_key_dict.keys()</span><br><span class="line"><span class="comment"># output： 148 ns ± 1.12 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="string">&#x27;9999&#x27;</span> <span class="keyword">in</span> dummy_string_key_dict</span><br><span class="line"><span class="comment"># output： 57.3 ns ± 0.0348 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br><span class="line"></span><br><span class="line">%%timeit</span><br><span class="line"><span class="string">&#x27;9999&#x27;</span> <span class="keyword">in</span> dummy_string_key_dict.keys()</span><br><span class="line"><span class="comment"># output： 135 ns ± 1.68 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><ul>
+<li><a href="https://stackoverflow.com/questions/1602934/check-if-a-given-key-already-exists-in-a-dictionary">https://stackoverflow.com/questions/1602934/check-if-a-given-key-already-exists-in-a-dictionary</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 Python 清理 MP3 的标签</title>
+    <url>/2019/08/02/python-clean-mp3-tags/</url>
+    <content><![CDATA[<p>从网上下载的MP3，有时候会带有很多杂乱的信息。</p>
+<p>可以通过Python进行批量的增加、修改、删除。</p>
+<p>参考 <a href="https://stackoverflow.com/questions/8948/accessing-mp3-meta-data-with-python">StackOverflow: accessing-mp3-meta-data-with-python</a></p>
+<p>有以下几种metadata相关工具：</p>
+<ul>
+<li>mutagen：资料相对较多，功能强大，使用简单。Github相对活跃。</li>
+<li>eyed3: 资料相对较多，windows下安装有依赖库</li>
+<li>mp3-tagger: 安装简单，实际使用时，清理未生效</li>
+</ul>
+<p>推荐使用 <code>mutagen</code> </p>
+<span id="more"></span>
+<p>示例代码（清理标签）：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> mutagen.mp3 <span class="keyword">import</span> EasyMP3</span><br><span class="line">audio = EasyMP3(<span class="string">&#x27;example.mp3&#x27;</span>)</span><br><span class="line">audio.delete()</span><br><span class="line">audio.save()</span><br></pre></td></tr></table></figure>
+
+
+
+<p> <a href="https://mutagen.readthedocs.org/">mutagen官网</a> 介绍：</p>
+<blockquote>
+<p>Mutagen is a Python module to handle audio metadata. It supports ASF, FLAC, MP4, Monkey’s Audio, MP3, Musepack, Ogg Opus, Ogg FLAC, Ogg Speex, Ogg Theora, Ogg Vorbis, True Audio, WavPack, OptimFROG, and AIFF audio files. All versions of ID3v2 are supported, and all standard ID3v2.4 frames are parsed. It can read Xing headers to accurately calculate the bitrate and length of MP3s. ID3 and APEv2 tags can be edited regardless of audio format. It can also manipulate Ogg streams on an individual packet&#x2F;page level.</p>
+<p>Mutagen works with Python 2.7, 3.5+ (CPython and PyPy) on Linux, Windows and macOS, and has no dependencies outside the Python standard library. Mutagen is licensed under the GPL version 2 or later.</p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>MP3</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 Python 设置docx文件格式</title>
+    <url>/2019/06/13/python-docx-page-setting/</url>
+    <content><![CDATA[<p>使用 <code>python-docx</code> 库，调整docx文件格式</p>
+<ul>
+<li>设置页面大小</li>
+<li>设置页边距</li>
+<li>设置分栏数量</li>
+<li>清理页眉页脚</li>
+</ul>
+<span id="more"></span>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> docx</span><br><span class="line"><span class="keyword">from</span> docx.shared <span class="keyword">import</span> Mm</span><br><span class="line"><span class="keyword">from</span> docx.oxml.ns <span class="keyword">import</span> qn</span><br><span class="line"></span><br><span class="line">doc = docx.Document(<span class="string">&#x27;myfile.docx&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># set  header footer attribute of document </span></span><br><span class="line">doc.settings.odd_and_even_pages_header_footer =  <span class="literal">False</span></span><br><span class="line"><span class="keyword">for</span> section <span class="keyword">in</span> doc.sections:</span><br><span class="line">    <span class="comment"># A4</span></span><br><span class="line">    section.page_width  = Mm(<span class="number">210</span>)</span><br><span class="line">    section.page_height = Mm(<span class="number">297</span>) </span><br><span class="line">    <span class="comment"># Page margin</span></span><br><span class="line">    section.top_margin    = Mm(<span class="number">5</span>)</span><br><span class="line">    section.bottom_margin = Mm(<span class="number">5</span>)</span><br><span class="line">    section.left_margin   = Mm(<span class="number">5</span>)</span><br><span class="line">    section.right_margin  = Mm(<span class="number">5</span>)</span><br><span class="line">    <span class="comment"># Columns = 1</span></span><br><span class="line">    sectPr = section._sectPr</span><br><span class="line">    cols = sectPr.xpath(<span class="string">&#x27;./w:cols&#x27;</span>)[<span class="number">0</span>]</span><br><span class="line">    cols.<span class="built_in">set</span>(qn(<span class="string">&#x27;w:num&#x27;</span>),<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    <span class="comment"># clear header and footer</span></span><br><span class="line">    section.different_first_page_header_footer = <span class="literal">False</span></span><br><span class="line">    section.header.is_linked_to_previous = <span class="literal">True</span></span><br><span class="line">    section.footer.is_linked_to_previous = <span class="literal">True</span></span><br><span class="line">    </span><br><span class="line">doc.save(<span class="string">&#x27;myfile.docx&#x27;</span>)</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>Word</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python扁平化词典</title>
+    <url>/2020/01/16/python-flatten-dict/</url>
+    <content><![CDATA[<p>Python 将词典扁平化，</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 原始数据</span></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">&#x27;a&#x27;</span>:<span class="number">1</span>,</span><br><span class="line">    <span class="string">&#x27;b&#x27;</span>:&#123;</span><br><span class="line">        <span class="string">&#x27;c1&#x27;</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="string">&#x27;c2&#x27;</span>:&#123;</span><br><span class="line">            <span class="string">&#x27;d2&#x27;</span>:&#123;</span><br><span class="line">                <span class="string">&#x27;e&#x27;</span>:<span class="number">3</span>,</span><br><span class="line">                <span class="string">&#x27;f&#x27;</span>:<span class="number">4</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转换后</span></span><br><span class="line">flat_data = &#123;</span><br><span class="line">    <span class="string">&#x27;a&#x27;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">&#x27;b.c1&#x27;</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="string">&#x27;b.c2.d2.e&#x27;</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="string">&#x27;b.c2.d2.f&#x27;</span>: <span class="number">4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要思路是迭代，这里给出两种实现方法。</p>
+<h2 id="使用生成器-yield"><a href="#使用生成器-yield" class="headerlink" title="使用生成器 yield"></a>使用生成器 yield</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">flatten</span>(<span class="params">d</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_flatten</span>(<span class="params">d, prefix=<span class="literal">None</span></span>):</span><br><span class="line">        <span class="keyword">for</span> k,v <span class="keyword">in</span> d.items():</span><br><span class="line">            full_key = k <span class="keyword">if</span> prefix <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> prefix + <span class="string">&#x27;.&#x27;</span> + k</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">isinstance</span>(v, <span class="built_in">dict</span>):</span><br><span class="line">                <span class="comment">#  yield from 可以逐个返回递归调用中的结果</span></span><br><span class="line">                <span class="keyword">yield</span> <span class="keyword">from</span> _flatten(v, full_key)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">yield</span> full_key,v</span><br><span class="line">    <span class="keyword">return</span> &#123;k:v <span class="keyword">for</span> k,v <span class="keyword">in</span> _flatten(d)&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="合并迭代返回值"><a href="#合并迭代返回值" class="headerlink" title="合并迭代返回值"></a>合并迭代返回值</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">flatten</span>(<span class="params">d, prefix=<span class="literal">None</span></span>):</span><br><span class="line">    items = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> k,v <span class="keyword">in</span> d.items():</span><br><span class="line">        full_key = k <span class="keyword">if</span> prefix <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> prefix + <span class="string">&#x27;.&#x27;</span> + k</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(v, <span class="built_in">dict</span>):</span><br><span class="line">            <span class="comment"># 通过 dict 的 update 方法合并子递归返回内容</span></span><br><span class="line">            sub_items = flatten(v, full_key)</span><br><span class="line">            items.update(sub_items)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            items[full_key] = v</span><br><span class="line">    <span class="keyword">return</span> items</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python 添加自定义模块到搜索路径</title>
+    <url>/2019/06/26/python-path/</url>
+    <content><![CDATA[<p>如果需要将自己开发的 Python 模块加入python的搜索路径，可在Python的<code>dist-packages</code>路径下添加<code>.pth</code>文件。</p>
+<span id="more"></span>
+<p>例如：</p>
+<p>在 <code>/usr/local/lib/python3.6/dist-packages/</code> 目录下创建 <code>mymodule.pth</code> (文件名任意)。</p>
+<p>内容为：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/path/to/your/models</span><br></pre></td></tr></table></figure>
+
+<p>如果在 <code>/path/to/your/models</code> 下有 <code>mymodel/util.py</code>，可以在python中按如下方法调用：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> mymodel.util <span class="keyword">import</span> func</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>PyYAML 不要对名称排序</title>
+    <url>/2019/08/12/python-yaml-not-sort-keys/</url>
+    <content><![CDATA[<p>python中，<code>yaml.dump</code>可添加参数<code>sort_keys=False</code>, 使得输出的结果不对键值进行排序。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> yaml</span><br><span class="line"></span><br><span class="line">data = &#123;<span class="string">&#x27;b&#x27;</span>:<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>:<span class="number">2</span>,<span class="string">&#x27;c&#x27;</span>:<span class="number">3</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># default output:(Alphabetical order)</span></span><br><span class="line"><span class="comment"># a: 2</span></span><br><span class="line"><span class="comment"># b: 1</span></span><br><span class="line"><span class="comment"># c: 3</span></span><br><span class="line"><span class="built_in">print</span>(yaml.dump(data))</span><br><span class="line"></span><br><span class="line"><span class="comment"># sort_keys=False, output:</span></span><br><span class="line"><span class="comment"># b: 1</span></span><br><span class="line"><span class="comment"># a: 2</span></span><br><span class="line"><span class="comment"># c: 3</span></span><br><span class="line"><span class="built_in">print</span>(yaml.dump(data,sort_keys=<span class="literal">False</span>))</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>yaml</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>树莓派 Ubuntu 18.04 Wifi 配置</title>
+    <url>/2019/06/18/raspberry-ubuntu1804-wifi-config/</url>
+    <content><![CDATA[<p>ubuntu1804，wifi的配置要通过 netplan 进行。</p>
+<span id="more"></span>
+
+<p>初始化的树莓派网络配置文件为</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># /etc/netplan/50-cloud-init.yaml</span></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">2</span></span><br><span class="line">    <span class="attr">ethernets:</span></span><br><span class="line">        <span class="attr">eth0:</span></span><br><span class="line">            <span class="attr">dhcp4:</span> <span class="literal">true</span></span><br><span class="line">            <span class="attr">match:</span></span><br><span class="line">                <span class="attr">macaddress:</span> <span class="string">&lt;eth0</span> <span class="string">mac&gt;</span></span><br><span class="line">            <span class="attr">set-name:</span> <span class="string">eth0</span></span><br></pre></td></tr></table></figure>
+
+<p>需要调整为如下内容：</p>
+<ul>
+<li>增加wikis章节</li>
+<li>eth0设置为 optional，否则：<ul>
+<li>在没有插网线的情况下，开机会卡主</li>
+<li>两个网络在同一个路由下，两个default网关，外部无法通过wifi网络访问</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># /etc/netplan/50-cloud-init.yaml</span></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">2</span></span><br><span class="line">    <span class="attr">ethernets:</span></span><br><span class="line">        <span class="attr">eth0:</span></span><br><span class="line">            <span class="attr">optional:</span> <span class="literal">true</span></span><br><span class="line">            <span class="attr">dhcp4:</span> <span class="literal">true</span></span><br><span class="line">            <span class="attr">match:</span></span><br><span class="line">                <span class="attr">macaddress:</span> <span class="string">&lt;eth0</span> <span class="string">mac&gt;</span></span><br><span class="line">            <span class="attr">set-name:</span> <span class="string">eth0</span></span><br><span class="line">    <span class="attr">wifis:</span></span><br><span class="line">            <span class="attr">wlan0:</span></span><br><span class="line">                    <span class="attr">optional:</span> <span class="literal">true</span></span><br><span class="line">                    <span class="attr">access-points:</span></span><br><span class="line">                            <span class="attr">&quot;Wifi-Name&quot;:</span></span><br><span class="line">                                    <span class="attr">password:</span> <span class="string">&quot;Wifi-Password&quot;</span></span><br><span class="line">                    <span class="attr">dhcp4:</span> <span class="literal">true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Ubuntu</tag>
+        <tag>raspberry</tag>
+        <tag>Wifi</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>不解压查看 tar.gz 包的文件列表</title>
+    <url>/2020/03/07/show-tar-gz-detail-without-extract/</url>
+    <content><![CDATA[<p>通过tar命令备份、解压缩文件，也可在不解压缩文件时查看包内的文件信息。</p>
+<p>使用如下参数：</p>
+<pre>
+tar -z<b style='color:red'>t</b>vf file.tar.gz
+</pre>
+<p>将列出所有包内的文件列表，包括目录</p>
+<pre>
+-z, --gzip, --gunzip, --ungzip	filter the archive through gzip
+<b style='color:red'>-t, --list	                    list the contents of an archive</b>
+-v, --verbose	                 verbosely list files processed
+-f, --file=ARCHIVE	            use archive file or device ARCHIVE
+</pre>
+
+<p>以上内容, 转自: <a href="https://www.cnblogs.com/0820LL/p/9620158.html">https://www.cnblogs.com/0820LL/p/9620158.html</a></p>
+<hr>
+<p>如果想查看文件压缩前后整体大小、压缩率等，可以使用：</p>
+<pre>
+<b style='color:red'>gzip -l</b> file.tar.gz
+</pre>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>右键菜单启动 Bash on Ubuntu on Windows </title>
+    <url>/2016/11/18/start_bash_on_ubuntu_on_windows_with_contextmenu/</url>
+    <content><![CDATA[<p>Windows 10 在 Red Stone 版本里开始发布的 <code>Bash on Ubuntu on Windows</code> 对于开发者来说，是一个很好的工具。</p>
+<ul>
+<li>可以直接使用很多linux下的命令（grep, awk, tail 等等）</li>
+<li>可以直接再Windows中安装Linux的各种软件和服务</li>
+<li>开发阶段可以直接在Windows下编译Linux程序（和VS Studio的新插件绝配）<span id="more"></span>
+在使用中，感觉不方便的一个地方，就是不能在任意位置启动bash窗口。<br>如果遇到类似的困扰，可以修改注册表，添加右键菜单来实现。<br>将以下脚本存为文本文件，后缀改为reg，双击导入即可：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Windows Registry Editor Version 5.00</span><br><span class="line">[HKEY_CLASSES_ROOT\Directory\Background\shell\cmdbash]</span><br><span class="line">@=&quot;Open Ubuntu Bash here&quot;</span><br><span class="line">[HKEY_CLASSES_ROOT\Directory\Background\shell\cmdbash\command]</span><br><span class="line">@=&quot;bash.exe&quot;</span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Windows</tag>
+        <tag>右键菜单</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux top 持续监控脚本</title>
+    <url>/2020/07/01/top-monitor-script/</url>
+    <content><![CDATA[<p>在定位 Linux 性能问题时，经常需要排查是哪个进程造成的系统资源（CPU、内存）过高。</p>
+<p>这里提供一个脚本，可方便的进行持续的 top 监控，将监控结果按时间戳命名，保存到文件。</p>
+<p>后续，可通过 <code>grep</code> 命令或脚本解析进行问题定位。</p>
+<h1 id="主要功能"><a href="#主要功能" class="headerlink" title="主要功能"></a>主要功能</h1><ul>
+<li>输出完整 top 进程列表</li>
+<li>支持自定义采集间隔</li>
+<li>支持删除过期日志</li>
+</ul>
+<h1 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h1><p><code>top_monitor.sh</code> 脚本如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#############################################################</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Monitor top to file, YYYYmmdd_HHMMSS.txt</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># usage:</span></span><br><span class="line"><span class="comment">#     nohup ./top_monitor.sh [outputdir]  &amp;</span></span><br><span class="line"><span class="comment"># params:</span></span><br><span class="line"><span class="comment">#     outputdir: optional， default: /var/log/top_monitor/</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># author: liangxinhui@qq.com</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># version: 0.1 2020-04-11</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#############################################################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># use first argument as output dir,</span></span><br><span class="line"><span class="comment"># if not set, use a default path</span></span><br><span class="line">OUTPUTDIR=<span class="variable">$1</span></span><br><span class="line"><span class="keyword">if</span> [ ! <span class="variable">$OUTPUTDIR</span> ]; <span class="keyword">then</span></span><br><span class="line">  OUTPUTDIR=/var/log/top_monitor/</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># monitor interval</span></span><br><span class="line">SLEEP_SECONDS=30</span><br><span class="line"><span class="comment"># max keep file time, set to 0 for all</span></span><br><span class="line"><span class="comment"># check interval = 100 * SLEEP_SECONDS</span></span><br><span class="line">KEEP_FILE_MINUTES=0</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="variable">$OUTPUTDIR</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> COLUMNS=1024</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ((i=0;;i++ ));</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">	DATETIME=$(<span class="built_in">date</span> +%Y%m%d_%H%M%S)</span><br><span class="line">	top -b -c -n 1  &gt; <span class="variable">$OUTPUTDIR</span>/top_<span class="variable">$&#123;DATETIME&#125;</span>.txt</span><br><span class="line"></span><br><span class="line">	<span class="comment"># remove old log files</span></span><br><span class="line">	<span class="keyword">if</span> [ <span class="variable">$KEEP_FILE_MINUTES</span> -gt 0  -a  `<span class="built_in">expr</span> <span class="variable">$i</span> % 100` == 0  ]; <span class="keyword">then</span></span><br><span class="line">	    find <span class="variable">$OUTPUTDIR</span>  -<span class="built_in">type</span> f -mmin +<span class="variable">$KEEP_FILE_MINUTES</span>  -delete</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">sleep</span> <span class="variable">$SLEEP_SECONDS</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu 18.04 下关闭 swap 的操作</title>
+    <url>/2020/04/16/ubuntu-swap-config/</url>
+    <content><![CDATA[<p>安装 kubernetes 时需要关掉swap， Ubuntu 18.04 下关闭 swap 的操作：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看是否有swap（返回空表示没有），也可以使用 top/free 查看</span></span><br><span class="line">sudo swapon --show</span><br><span class="line"><span class="comment"># 关掉 swap </span></span><br><span class="line">sudo swapoff -v /swap.img </span><br><span class="line"><span class="comment"># 修改 fstab ，取消启动挂载</span></span><br><span class="line">vim /etc/fstab </span><br><span class="line"><span class="comment"># 删除交换分区文件</span></span><br><span class="line"><span class="built_in">rm</span> -rf /swap.img </span><br></pre></td></tr></table></figure>
+
+<p><code>/swap.img</code> 为 <code>ubuntu 18.04</code> 默认的 swap 文件。其他场景可通过<code>cat /etc/fstab</code> 查看。</p>
+<p>关于<code>swap</code>更多操作, 参考：</p>
+<p><a href="https://www.sysgeek.cn/ubuntu-18-04-swap/">https://www.sysgeek.cn/ubuntu-18-04-swap/</a></p>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>swig转python 多线程问题</title>
+    <url>/2016/11/03/swig_python_threads/</url>
+    <content><![CDATA[<p>SWIG (Simplified Wrapper and Interface Generator) </p>
+<p>当使用wsig将c++转换为python时，可以使用<code>-threads</code> 参数。<br>它可以帮你处理GIL的问题。</p>
+<span id="more"></span>
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">swig -c++ -python -threads  example.i</span><br></pre></td></tr></table></figure>
+
+<p>参考链接：<br><a href="http://blog.audio-tk.com/2007/11/23/enabling-thread-support-in-swig-and-python/">http://blog.audio-tk.com/2007/11/23/enabling-thread-support-in-swig-and-python/</a></p>
+<p>解决的问题：<br><a href="http://stackoverflow.com/questions/9569372/swig-c-python-polymorphism-and-multi-threading">http://stackoverflow.com/questions/9569372/swig-c-python-polymorphism-and-multi-threading</a></p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>SWIG</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu 按键映射</title>
+    <url>/2019/04/14/ubuntu-keyboard-mapping/</url>
+    <content><![CDATA[<p>小米笔记本默认的按键 <code>Insert</code> 需要 <code>Fn + F12</code>，在linux终端中，常用 <code>Shift + Insert</code> 进行粘贴操作。</p>
+<p>需要修改按键映射，交换 <code>F12</code> 与 <code>Insert</code>。</p>
+<span id="more"></span>
+
+<p>方法：</p>
+<p>打开文件 <code>/usr/share/X11/xkb/keycodes/evdev</code></p>
+<p>修改映射表后边的数字。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;FK12&gt; = 96;</span><br><span class="line">...</span><br><span class="line">&lt;INS&gt; = 118;</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;FK12&gt; = 118;</span><br><span class="line">...</span><br><span class="line">&lt;INS&gt; = 96;</span><br></pre></td></tr></table></figure>
+
+<p>参考：<br><a href="https://blog.csdn.net/elliott_yoho/article/details/78650838">https://blog.csdn.net/elliott_yoho/article/details/78650838</a></p>
+]]></content>
+      <tags>
+        <tag>Ubuntu</tag>
+        <tag>XiaoMi</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>虚拟机磁盘空间压缩</title>
+    <url>/2019/07/18/virtualbox-compact-disk/</url>
+    <content><![CDATA[<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>虚拟机的磁盘类型，一般为了节省空间，会设置为动态增长。随着写入文件的增多，磁盘文件（vdi&#x2F;vmdk等)会越来越大。即便虚拟机内部文件删除了，宿主机中原来开辟出来的空间还是不会释放。 </p>
+<p>VMWare、Virtualbox提供了相应的工具来压缩磁盘空间。</p>
+<p>以Virtualbox为例，该命令为 <code>VBoxManage modifymedium &lt;diskfile&gt; --compact</code>.</p>
+<span id="more"></span>
+
+<h1 id="官方说明"><a href="#官方说明" class="headerlink" title="官方说明"></a>官方说明</h1><p><a href="https://docs.oracle.com/cd/E97728_01/E97727/html/vboxmanage-modifyvdi.html">链接</a></p>
+<blockquote>
+<p>For compatibility with earlier versions of Oracle VM VirtualBox, the modifyvdi and modifyhd commands are also supported and mapped internally to the modifymedium command.</p>
+</blockquote>
+<blockquote>
+<p>The –compact option can be used to compact disk images. Compacting removes blocks that only contains zeroes. Using this option will shrink a dynamically allocated image. It will reduce the physical size of the image without affecting the logical size of the virtual disk. Compaction works both for base images and for differencing images created as part of a snapshot.</p>
+<p>For this operation to be effective, it is required that free space in the guest system first be zeroed out using a suitable software tool. For Windows guests, you can use the sdelete tool provided by Microsoft. Run sdelete -z in the guest to zero the free disk space, before compressing the virtual disk image. For Linux, use the zerofree utility which supports ext2&#x2F;ext3 filesystems. For Mac OS X guests, use the diskutil secureErase freespace 0 &#x2F; command from an elevated Terminal.</p>
+<p>Please note that compacting is currently only available for VDI images. A similar effect can be achieved by zeroing out free blocks and then cloning the disk to any other dynamically allocated format. You can use this workaround until compacting is also supported for disk formats other than VDI.</p>
+</blockquote>
+<h1 id="关键点"><a href="#关键点" class="headerlink" title="关键点"></a>关键点</h1><p><strong>使用<code>VBoxManage modifymedium</code>前，必须先将磁盘未使用空间填为<code>0</code></strong></p>
+<ul>
+<li>Windows 用 <code>sdelete -z</code></li>
+<li>Linux 用 zerofree 或 dd (<code>dd if=/dev/zero of=/tmp/zerofile bs=10M; rm -rf /tmp/zerofile</code>)</li>
+</ul>
+<h1 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h1><ul>
+<li>除了使用<code>VBoxManage modifymedium</code>，也可以用克隆磁盘的方法来进行。前提都是先将未使用空间重置为<code>0</code></li>
+<li>有些教程提到 <code>VBoxManage modifyhd</code> 或 <code>VBoxManage modifyvdi</code>，新版本统一为 <code>VBoxManage modifymedium</code></li>
+<li><code>dd</code> 操作写文件时，可放心操作，即便宿主机可用空间不足，虚拟机内部也能写满。可以理解为<code>dd</code>持续写0，不会增加宿主机中虚拟磁盘文件大小。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Virtualbox</tag>
+        <tag>压缩</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>VS Code 粘贴图片插件 Paste Image</title>
+    <url>/2019/04/21/vscode-paste-image/</url>
+    <content><![CDATA[<p>VSCode <a href="https://marketplace.visualstudio.com/items?itemName=mushan.vscode-paste-image">Paste Image</a> 插件，可以很方便的粘贴图片到 Markdown 文件中。</p>
+<p>稍作配置，可以和 hexo 完美结合。</p>
+<span id="more"></span>
+
+<h1 id="一般场景配置"><a href="#一般场景配置" class="headerlink" title="一般场景配置"></a>一般场景配置</h1><p><strong>粘贴到每个文件同级的 images 目录下</strong></p>
+<p><code>.vscode/settings.json</code>:</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line"><span class="attr">&quot;pasteImage.basePath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileDir&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileDir&#125;/images&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.namePrefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileNameWithoutExt&#125;_&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.defaultName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;YMMDDHHmmss&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;pasteImage.forceUnixStyleSeparator&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Hexo-配置"><a href="#Hexo-配置" class="headerlink" title="Hexo 配置"></a>Hexo 配置</h1><p><strong>粘贴到 source&#x2F;images 目录下（这样可以在文章和首页都访问到）</strong></p>
+<p><code>.vscode/settings.json</code>:</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.namePrefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;currentFileNameWithoutExt&#125;_&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.defaultName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;YMMDDHHmmss&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;projectRoot&#125;/source/images&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.basePath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;projectRoot&#125;/source&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.forceUnixStyleSeparator&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pasteImage.prefix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong><br><img src="/images/vscode-paste-image_20190626211219.png"></p>
+]]></content>
+      <tags>
+        <tag>插件</tag>
+        <tag>VSCode</tag>
+        <tag>Markdown</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vue学习笔记-02-实例</title>
+    <url>/2017/11/06/vue-learning-note-02-instance/</url>
+    <content><![CDATA[<h1 id="数据与方法"><a href="#数据与方法" class="headerlink" title="数据与方法"></a>数据与方法</h1><ul>
+<li>当vue实例创建时，与数据对象绑定<ul>
+<li>vue中的数据与外部数据为引用关系</li>
+<li>当数据对象更新时，会触发视图同步更新</li>
+</ul>
+</li>
+<li>对已经实例化的vue实例添加的属性，不会触发视图更新</li>
+</ul>
+<span id="more"></span>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 我们的数据对象</span></span><br><span class="line"><span class="keyword">var</span> data = &#123; <span class="attr">a</span>: <span class="number">1</span> &#125;</span><br><span class="line"><span class="comment">// 该对象被加入到一个 Vue 实例中</span></span><br><span class="line"><span class="keyword">var</span> vm = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">data</span>: data</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">// 他们引用相同的对象！</span></span><br><span class="line">vm.<span class="property">a</span> === data.<span class="property">a</span> <span class="comment">// =&gt; true</span></span><br><span class="line"><span class="comment">// 设置属性也会影响到原始数据</span></span><br><span class="line">vm.<span class="property">a</span> = <span class="number">2</span></span><br><span class="line">data.<span class="property">a</span> <span class="comment">// =&gt; 2</span></span><br><span class="line"><span class="comment">// ... 反之亦然</span></span><br><span class="line">data.<span class="property">a</span> = <span class="number">3</span></span><br><span class="line">vm.<span class="property">a</span> <span class="comment">// =&gt; 3</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h1><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">a</span>: <span class="number">1</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">created</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="comment">// `this` 指向 vm 实例</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;a is: &#x27;</span> + <span class="variable language_">this</span>.<span class="property">a</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">// =&gt; &quot;a is: 1&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>钩子函数在vue属性中与 data、methods同级。</p>
+<p>常见钩子：</p>
+<ul>
+<li>created</li>
+<li>mounted</li>
+<li>updated</li>
+<li>destroyed</li>
+</ul>
+<blockquote>
+<p>note: 不要在选项属性或回调上使用箭头函数，比如 created: () &#x3D;&gt; console.log(this.a) 或 vm.$watch(‘a’, newValue &#x3D;&gt; this.myMethod())。因为箭头函数是和父级上下文绑定在一起的，this 不会是如你所预期的 Vue 实例。会导致未定义属性或方法的错误。</p>
+</blockquote>
+<h1 id="生命周期图"><a href="#生命周期图" class="headerlink" title="生命周期图"></a>生命周期图</h1><p><img src="/images/vue-learning-note-02-instance-20171106212049.png"></p>
+]]></content>
+      <tags>
+        <tag>Vue</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vue学习笔记-01-HelloWorld</title>
+    <url>/2017/11/06/vue-learning-node-01-helloworld/</url>
+    <content><![CDATA[<h1 id="hello-world"><a href="#hello-world" class="headerlink" title="hello world"></a>hello world</h1><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">  &#123;&#123; message &#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">message</span>: <span class="string">&#x27;Hello Vue!&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+
+<h1 id="v-bind"><a href="#v-bind" class="headerlink" title="v-bind"></a>v-bind</h1><p>单项绑定</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-2&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">span</span> <span class="attr">v-bind:title</span>=<span class="string">&quot;message&quot;</span>&gt;</span></span><br><span class="line">    鼠标悬停几秒钟查看此处动态绑定的提示信息！</span><br><span class="line">  <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app2 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-2&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">message</span>: <span class="string">&#x27;页面加载于 &#x27;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>().<span class="title function_">toLocaleString</span>()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h1 id="v-model"><a href="#v-model" class="headerlink" title="v-model"></a>v-model</h1><p>双向绑定</p>
+<p>见下文</p>
+<h1 id="控制逻辑"><a href="#控制逻辑" class="headerlink" title="控制逻辑"></a>控制逻辑</h1><h2 id="v-if"><a href="#v-if" class="headerlink" title="v-if"></a>v-if</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-3&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span> <span class="attr">v-if</span>=<span class="string">&quot;seen&quot;</span>&gt;</span>现在你看到我了<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app3 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-3&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">seen</span>: <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="v-for"><a href="#v-for" class="headerlink" title="v-for"></a>v-for</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-4&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ol</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">v-for</span>=<span class="string">&quot;todo in todos&quot;</span>&gt;</span></span><br><span class="line">      &#123;&#123; todo.text &#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ol</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app4 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-4&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">todos</span>: [</span><br><span class="line">      &#123; <span class="attr">text</span>: <span class="string">&#x27;学习 JavaScript&#x27;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">text</span>: <span class="string">&#x27;学习 Vue&#x27;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">text</span>: <span class="string">&#x27;整个牛项目&#x27;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h1 id="用户输入"><a href="#用户输入" class="headerlink" title="用户输入"></a>用户输入</h1><h2 id="v-on-click"><a href="#v-on-click" class="headerlink" title="v-on click"></a>v-on click</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-5&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; message &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">button</span> <span class="attr">v-on:click</span>=<span class="string">&quot;reverseMessage&quot;</span>&gt;</span>逆转消息<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app5 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-5&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">message</span>: <span class="string">&#x27;Hello Vue.js!&#x27;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    <span class="attr">reverseMessage</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">message</span> = <span class="variable language_">this</span>.<span class="property">message</span>.<span class="title function_">split</span>(<span class="string">&#x27;&#x27;</span>).<span class="title function_">reverse</span>().<span class="title function_">join</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="v-model-1"><a href="#v-model-1" class="headerlink" title="v-model"></a>v-model</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-6&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; message &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">v-model</span>=<span class="string">&quot;message&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> app6 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-6&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">message</span>: <span class="string">&#x27;Hello Vue!&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h1 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h1><p>在 Vue 里，一个组件本质上是一个拥有预定义选项的一个 Vue 实例</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app-7&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ol</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">      现在我们为每个 todo-item 提供 todo 对象</span></span><br><span class="line"><span class="comment">      todo 对象是变量，即其内容可以是动态的。</span></span><br><span class="line"><span class="comment">      我们也需要为每个组件提供一个“key”，晚些时候我们会做个解释。</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">todo-item</span></span></span><br><span class="line"><span class="tag">      <span class="attr">v-for</span>=<span class="string">&quot;item in groceryList&quot;</span></span></span><br><span class="line"><span class="tag">      <span class="attr">v-bind:todo</span>=<span class="string">&quot;item&quot;</span></span></span><br><span class="line"><span class="tag">      <span class="attr">v-bind:key</span>=<span class="string">&quot;item.id&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">todo-item</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ol</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Vue</span>.<span class="title function_">component</span>(<span class="string">&#x27;todo-item&#x27;</span>, &#123;</span><br><span class="line">  <span class="attr">props</span>: [<span class="string">&#x27;todo&#x27;</span>],</span><br><span class="line">  <span class="attr">template</span>: <span class="string">&#x27;&lt;li&gt;&#123;&#123; todo.text &#125;&#125;&lt;/li&gt;&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">var</span> app7 = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">  <span class="attr">el</span>: <span class="string">&#x27;#app-7&#x27;</span>,</span><br><span class="line">  <span class="attr">data</span>: &#123;</span><br><span class="line">    <span class="attr">groceryList</span>: [</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">0</span>, <span class="attr">text</span>: <span class="string">&#x27;蔬菜&#x27;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">text</span>: <span class="string">&#x27;奶酪&#x27;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">text</span>: <span class="string">&#x27;随便其他什么人吃的东西&#x27;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Vue</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vue学习笔记-03-模板</title>
+    <url>/2017/11/06/vue-learning-note-03-template/</url>
+    <content><![CDATA[<h1 id="模板语法"><a href="#模板语法" class="headerlink" title="模板语法"></a>模板语法</h1><h2 id="插值"><a href="#插值" class="headerlink" title="插值"></a>插值</h2><h3 id="文本"><a href="#文本" class="headerlink" title="文本"></a>文本</h3><p>“Mustache”语法 (双大括号) </p>
+<p>常规插值：数据更新后，视图会同步更新</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">span</span>&gt;</span>Message: &#123;&#123; msg &#125;&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>一次性插值：数据更新后，视图不更新</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">v-once</span>&gt;</span>这个将不会改变: &#123;&#123; msg &#125;&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<h3 id="原始HTML"><a href="#原始HTML" class="headerlink" title="原始HTML"></a>原始HTML</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">v-html</span>=<span class="string">&quot;rawHtml&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>这个 div 的内容将会被替换成为属性值 rawHtml，直接作为 HTML——会忽略解析属性值中的数据绑定。</li>
+<li>注意，你不能使用 v-html 来复合局部模板，因为 Vue 不是基于字符串的模板引擎。</li>
+<li>反之，对于用户界面 (UI)，组件更适合作为可重用和可组合的基本单位。</li>
+</ul>
+<blockquote>
+<p>注意：你的站点上动态渲染的任意 HTML 可能会非常危险，因为它很容易导致 XSS 攻击。请只对可信内容使用 HTML 插值，绝不要对用户提供的内容使用插值。</p>
+</blockquote>
+<h3 id="特性（html-属性）"><a href="#特性（html-属性）" class="headerlink" title="特性（html 属性）"></a>特性（html 属性）</h3><p>Mustache（双大括号） 语法不能作用在 HTML 属性上，遇到这种情况应该使用 v-bind 指令。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">v-bind:id</span>=<span class="string">&quot;dynamicId&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">v-bind:disabled</span>=<span class="string">&quot;isButtonDisabled&quot;</span>&gt;</span>Button<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的布尔类可以是任何的 falsy 类型：</p>
+<ul>
+<li>false</li>
+<li>null</li>
+<li>undefined</li>
+<li>0</li>
+<li>NaN</li>
+<li>‘’</li>
+<li>“”</li>
+</ul>
+<h3 id="JavaScript-表达式"><a href="#JavaScript-表达式" class="headerlink" title="JavaScript 表达式"></a>JavaScript 表达式</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line">&#123;&#123; number + 1 &#125;&#125;</span><br><span class="line">&#123;&#123; ok ? &#x27;YES&#x27; : &#x27;NO&#x27; &#125;&#125;</span><br><span class="line">&#123;&#123; message.split(&#x27;&#x27;).reverse().join(&#x27;&#x27;) &#125;&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">v-bind:id</span>=<span class="string">&quot;&#x27;list-&#x27; + id&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>限制：每个绑定只能包含单个表达式。（而不能是语句）</p>
+</blockquote>
+<p>反例：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 这是语句，不是表达式 --&gt;</span></span><br><span class="line">&#123;&#123; var a = 1 &#125;&#125;</span><br><span class="line"><span class="comment">&lt;!-- 流控制也不会生效，请使用三元表达式 --&gt;</span></span><br><span class="line">&#123;&#123; if (ok) &#123; return message &#125; &#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<ul>
+<li>模板表达式都被放在沙盒中，只能访问全局变量的一个白名单，如 Math 和 Date 。</li>
+<li>你不应该在模板表达式中试图访问用户定义的全局变量。</li>
+</ul>
+<h2 id="指令-v-xxx"><a href="#指令-v-xxx" class="headerlink" title="指令 (v-xxx)"></a>指令 (v-xxx)</h2><ul>
+<li>v-if</li>
+<li>v-for</li>
+<li>v-bind</li>
+<li>v-on</li>
+</ul>
+<h3 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- v-<span class="doctag">xxx:</span>param=&quot;value&quot; --&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-bind:href</span>=<span class="string">&quot;url&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-on:click</span>=<span class="string">&quot;doSomething&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>冒号（：）之后为参数，如href&#x2F;click 等。</p>
+<h3 id="修饰符（Modifiers）"><a href="#修饰符（Modifiers）" class="headerlink" title="修饰符（Modifiers）"></a>修饰符（Modifiers）</h3><p>描述特殊绑定方式。</p>
+<p>例如，.prevent 修饰符告诉 v-on 指令对于触发的事件调用 event.preventDefault() </p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">v-on:submit.prevent</span>=<span class="string">&quot;onSubmit&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><em><strong>TODO: 这里没弄懂</strong></em></p>
+<h2 id="缩写"><a href="#缩写" class="headerlink" title="缩写"></a>缩写</h2><h3 id="v-bind"><a href="#v-bind" class="headerlink" title="v-bind (:)"></a>v-bind (:)</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 完整语法 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-bind:href</span>=<span class="string">&quot;url&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 缩写 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">:href</span>=<span class="string">&quot;url&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="v-on"><a href="#v-on" class="headerlink" title="v-on (@)"></a>v-on (@)</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 完整语法 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-on:click</span>=<span class="string">&quot;doSomething&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 缩写 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> @<span class="attr">click</span>=<span class="string">&quot;doSomething&quot;</span>&gt;</span>...<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Vue</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 10 搜索空白</title>
+    <url>/2019/05/30/windows-10-cortana-search-error/</url>
+    <content><![CDATA[<p>Windows 10 开始菜单搜索，会出现空白现象。</p>
+<p>主要是在 1803、1809中出现。升级到1903后暂时没有出现。</p>
+<span id="more"></span>
+
+<p>修复方法：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># powershell 中管理员运行</span></span><br><span class="line">Get-AppXPackage -Name Microsoft.Windows.Cortana | Foreach &#123;Add-AppxPackage -DisableDevelopmentMode -Register <span class="string">&quot;<span class="subst">$($_.InstallLocation)</span>\AppXManifest.xml&quot;</span>&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows10下CorelDRAW9保存窗口文件名输入框完整显示补丁</title>
+    <url>/2019/08/28/windows10-coreldraw9-save-window-modify/</url>
+    <content><![CDATA[<p>CorelDRAW 9 在 Windows10下运行时，保存窗口被遮盖。</p>
+<p>网友提供了详细的解决方法：</p>
+<p><a href="https://wenku.baidu.com/view/5f98985bff4733687e21af45b307e87101f6f8cd">CDR9在WIN10保存完整对话框</a></p>
+<p><a href="https://www.520cdr.com/2019/1383.html">CorelDRAW 9.0 win10保存&#x2F;打开对话框不完整解决办法</a></p>
+<p>主要思路为：<strong>通过<code>PE Explorer</code>修改<code>drawintl.dll</code>里的<code>保存</code>和<code>另存为</code>对话框（Dialog）资源文件。</strong></p>
+<p>该方法有一定的通用性，适用于老软件在Windows10下窗口元素错位、遮盖问题。</p>
+<p>附 CorelDRAW 9 修改过的<code>drawintl.dll</code>文件：</p>
+<blockquote>
+<p>链接：<a href="https://pan.baidu.com/s/1iTEXSpT7m0PL6Us0x_7X9Q">https://pan.baidu.com/s/1iTEXSpT7m0PL6Us0x_7X9Q</a><br>提取码：bf2j </p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>CorelDRAW</tag>
+        <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 下的 which 命令 (Get-Command)</title>
+    <url>/2019/07/25/windows-which-get-command/</url>
+    <content><![CDATA[<p>Linux 下的很多工具用起来很方便，比如 cat、grep、awk、sed、which 等等。</p>
+<p>其中 which 可以用来查找当前环境中的某个程序的具体路径在哪里。</p>
+<p>Windows 下安装过 <code>Git for Windows</code> 后，也可以使用这些常用的linux命令。</p>
+<p>其实，还有另外一种方法，可以使用 <code>Powershell</code> 的 <code>Get-Command</code>指令。</p>
+<p>例如：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">PS</span> C:\Users\liangxinhui\Desktop&gt; <span class="built_in">Get-Command</span> ssh</span><br><span class="line"></span><br><span class="line">CommandType     Name     Version    Source</span><br><span class="line"><span class="literal">-----------</span>     <span class="literal">----</span>     <span class="literal">-------</span>    <span class="literal">------</span></span><br><span class="line">Application     ssh.exe  <span class="number">0.0</span>.<span class="number">0.0</span>    C:\Program Files\Git\usr\bin\ssh.exe</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">PS</span> C:\Users\liangxinhui\Desktop&gt; which ssh</span><br><span class="line">/usr/bin/ssh</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>Windows</tag>
+        <tag>which</tag>
+        <tag>Get-Command</tag>
+      </tags>
+  </entry>
+</search>
